@@ -2,63 +2,110 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Zarządzanie lotami – Panel menadżera</title>
+    <title>Loty</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
 <header class="top-bar">
     <div class="logo">Lotnisko</div>
-    <nav class="top-nav">
-        <span class="role-label">Menadżer</span>
+    <div class="actions">
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
-    </nav>
+    </div>
 </header>
 
 <main class="container">
 
-    <!-- NAGŁÓWEK -->
-    <section class="card card-header">
-        <h2>Zarządzanie lotami</h2>
-        <p>Twórz, edytuj i kontroluj loty</p>
-    </section>
-
     <!-- LISTA LOTÓW -->
     <section class="card">
+        <h2>Loty</h2>
 
-        <div class="table-actions">
-            <button class="btn-primary" onclick="openAddFlight()">
+        <div class="table-wrapper">
+            <table class="employees-table">
+                <thead>
+                    <tr>
+                        <th>Trasa</th>
+                        <th>Data</th>
+                        <th>Godzina</th>
+                        <th>Status</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody id="flightsBody">
+                    <tr>
+                        <td colspan="5" class="table-loading">Ładowanie...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" onclick="showAddFlightForm()">
                 + Dodaj lot
+            </button>
+
+            <button class="btn-secondary" onclick="goBack()">
+                Wróć
+            </button>
+        </div>
+    </section>
+
+    <!-- DODAWANIE LOTU -->
+    <section class="card" id="addFlightSection" style="display:none;">
+        <h2>Dodaj lot</h2>
+
+        <div class="form-grid">
+
+            <!-- LOTNISKO WYLOTU -->
+            <input type="text" id="fromCity" placeholder="Miasto wylotu (np. Warszawa)">
+            <input type="text" id="fromCountry" placeholder="Kraj wylotu (np. Polska)">
+
+            <!-- LOTNISKO PRZYLOTU -->
+            <input type="text" id="toCity" placeholder="Miasto przylotu (np. Londyn)">
+            <input type="text" id="toCountry" placeholder="Kraj przylotu (np. Wielka Brytania)">
+
+            <!-- DANE LOTU -->
+            <input type="date" id="data">
+            <input type="time" id="godzina">
+
+            <select id="status">
+                <option value="AKTYWNY">Aktywny</option>
+                <option value="NIEAKTYWNY">Nieaktywny</option>
+            </select>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" onclick="createFullFlight()">
+                Zapisz lot
+            </button>
+
+            <button class="btn-secondary" onclick="hideAddFlightForm()">
+                Anuluj
             </button>
         </div>
 
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Trasa</th>
-                    <th>Data</th>
-                    <th>Godzina</th>
-                    <th>Samolot</th>
-                    <th>Status</th>
-                    <th>Akcje</th>
-                </tr>
-            </thead>
-            <tbody id="flightsBody">
-                <tr>
-                    <td colspan="6">Ładowanie lotów…</td>
-                </tr>
-            </tbody>
-        </table>
-
+        <div id="flightResult"></div>
     </section>
 
 </main>
 
 <script src="../js/session.js"></script>
+<script src="../js/app.js"></script>
 <script src="../js/flights.js"></script>
 
 <script>
-    checkSession(['MENADZER']);
+    function goBack() {
+        window.location.href = 'dashboard.html';
+    }
+
+    function showAddFlightForm() {
+        document.getElementById('addFlightSection').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function hideAddFlightForm() {
+        document.getElementById('addFlightSection').style.display = 'none';
+    }
 </script>
 
 </body>

@@ -21,4 +21,18 @@ class SamolotController extends Controller
 
         return Samolot::create($data);
     }
+    public function update(Request $request, $id)
+    {
+        $samolot = Samolot::findOrFail($id);
+
+        $data = $request->validate([
+            'model' => 'required|string|max:255',
+            'liczba_miejsc' => 'required|integer|min:1'
+        ]);
+
+        $samolot->update($data);
+
+        return response()->json($samolot);
+    }
+
 }

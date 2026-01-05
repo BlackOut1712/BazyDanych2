@@ -516,3 +516,164 @@ body {
     font-weight: bold;
     color: #1a73e8;
 }
+/* === TABELA PRACOWNIKÓW === */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.employees-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.employees-table thead {
+    background-color: #f5f6f8;
+}
+
+.employees-table th {
+    text-align: left;
+    padding: 14px 16px;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.employees-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.employees-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.employees-table tbody tr:hover {
+    background-color: #f0f4ff;
+}
+
+.table-loading {
+    text-align: center;
+    color: #777;
+}
+
+/* === ROLA JAKO BADGE === */
+
+.role-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.role-KASJER {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.role-MENADZER {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* === FORMULARZ === */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.form-grid input,
+.form-grid select {
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.form-grid input:focus,
+.form-grid select:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* === SUBTITLE === */
+.subtitle {
+    color: #666;
+    margin-top: 4px;
+}
+
+/* === TABELA === */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.data-table thead {
+    background: #f5f6f8;
+}
+
+.data-table th {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.data-table tbody tr:hover {
+    background: #f0f4ff;
+}
+
+/* === STATUSY === */
+.status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status-ok {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-bad {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* === AKCJE === */
+.icon-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 6px;
+}
+
+.icon-btn.danger {
+    color: #c62828;
+}

@@ -151,4 +151,12 @@ class PlatnoscController extends Controller
             ]);
         });
     }
+    public function index()
+    {
+        return response()->json(
+            Platnosc::with('bilet')->get()
+        );
+    }
+
+
 }
