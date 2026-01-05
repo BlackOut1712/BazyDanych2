@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Historia zamówień</title>
+    <link rel="stylesheet" href="../css/style.css">
+	<script src="../js/session.js"></script>
+	<script>
+		checkSession('client');
+	</script>
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+</header>
+
+<main class="container">
+    <h3>Historia zamówień</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Trasa</th>
+                <th>Data</th>
+                <th>Miejsce</th>
+                <th>Status</th>
+                <th>Cena</th>
+            </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+    </table>
+</main>
+
+<script src="../js/tickets.js"></script>
+</body>
+</html>

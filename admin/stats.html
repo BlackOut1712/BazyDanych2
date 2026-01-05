@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Statystyki – Panel menadżera</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <nav class="top-nav">
+        <span class="role-label">Menadżer</span>
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </nav>
+</header>
+
+<main class="container">
+
+    <!-- NAGŁÓWEK -->
+    <section class="card card-header">
+        <h2>Statystyki systemu</h2>
+        <p>Podsumowanie sprzedaży i rezerwacji</p>
+    </section>
+
+    <!-- KAFELKI -->
+    <section class="stats-grid">
+
+        <div class="card stat-card">
+            <h3>Liczba lotów</h3>
+            <p id="statFlights">–</p>
+        </div>
+
+        <div class="card stat-card">
+            <h3>Rezerwacje</h3>
+            <p id="statReservations">–</p>
+        </div>
+
+        <div class="card stat-card">
+            <h3>Sprzedane bilety</h3>
+            <p id="statTickets">–</p>
+        </div>
+
+        <div class="card stat-card">
+            <h3>Przychód</h3>
+            <p id="statRevenue">–</p>
+        </div>
+
+    </section>
+
+    <!-- SZCZEGÓŁY -->
+    <section class="card">
+        <h3>Najpopularniejsze loty</h3>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Trasa</th>
+                    <th>Liczba biletów</th>
+                </tr>
+            </thead>
+            <tbody id="popularFlightsBody">
+                <tr>
+                    <td colspan="2">Ładowanie…</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+<script src="../js/session.js"></script>
+<script src="../js/stats.js"></script>
+
+<script>
+    checkSession(['MENADZER']);
+</script>
+
+</body>
+</html>

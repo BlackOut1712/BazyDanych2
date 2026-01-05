@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Zarządzanie lotami – Panel menadżera</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <nav class="top-nav">
+        <span class="role-label">Menadżer</span>
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </nav>
+</header>
+
+<main class="container">
+
+    <!-- NAGŁÓWEK -->
+    <section class="card card-header">
+        <h2>Zarządzanie lotami</h2>
+        <p>Twórz, edytuj i kontroluj loty</p>
+    </section>
+
+    <!-- LISTA LOTÓW -->
+    <section class="card">
+
+        <div class="table-actions">
+            <button class="btn-primary" onclick="openAddFlight()">
+                + Dodaj lot
+            </button>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Trasa</th>
+                    <th>Data</th>
+                    <th>Godzina</th>
+                    <th>Samolot</th>
+                    <th>Status</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody id="flightsBody">
+                <tr>
+                    <td colspan="6">Ładowanie lotów…</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </section>
+
+</main>
+
+<script src="../js/session.js"></script>
+<script src="../js/flights.js"></script>
+
+<script>
+    checkSession(['MENADZER']);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Samoloty – Panel menadżera</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <nav class="top-nav">
+        <span class="role-label">Menadżer</span>
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </nav>
+</header>
+
+<main class="container">
+
+    <section class="card card-header">
+        <h2>Zarządzanie flotą</h2>
+        <p>Samoloty i konfiguracja miejsc</p>
+    </section>
+
+    <section class="card">
+        <div class="table-actions">
+            <button class="btn-primary" onclick="openAddPlane()">
+                + Dodaj samolot
+            </button>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Model</th>
+                    <th>Liczba miejsc</th>
+                    <th>Typ</th>
+                    <th>Status</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody id="planesBody">
+                <tr>
+                    <td colspan="5">Ładowanie danych…</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+<script src="../js/session.js"></script>
+<script src="../js/planes.js"></script>
+
+<script>
+    checkSession(['MENADZER']);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Podsumowanie rezerwacji</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+</header>
+
+<main class="container">
+
+    <section class="card">
+        <h2>Rezerwacja utworzona</h2>
+
+        <div id="summaryData" class="summary-data">
+            <!-- dane w JS -->
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" id="payBtn">
+                Przejdź do płatności
+            </button>
+
+            <button class="btn-secondary" onclick="goBack()">
+                Wróć
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<script src="../js/session.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/summary.js"></script>
+</body>
+</html>

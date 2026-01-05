@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel kasjera</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<!-- GÓRNY PASEK -->
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <nav class="top-nav">
+        <span class="role-label">Kasjer</span>
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </nav>
+</header>
+
+<!-- ZAWARTOŚĆ -->
+<main class="container">
+
+    <section class="card card-header">
+        <h2>Panel kasjera</h2>
+        <p>Sprzedaż biletów, rezerwacje oraz zwroty</p>
+    </section>
+
+    <section class="card-grid">
+
+        <div class="card action-card" onclick="goToSell()">
+            <h3>Sprzedaż</h3>
+            <p>Sprzedaj bilet klientowi</p>
+        </div>
+
+        <div class="card action-card" onclick="goToReservations()">
+            <h3>Rezerwacje</h3>
+            <p>Obsługa istniejących rezerwacji</p>
+        </div>
+
+        <div class="card action-card" onclick="goToRefund()">
+            <h3>Zwroty</h3>
+            <p>Zwrot biletów i anulacje</p>
+        </div>
+
+    </section>
+
+</main>
+
+<!-- SESJA -->
+<script src="../js/session.js"></script>
+<script src="../js/cashier.js"></script>
+
+<script>
+    checkSession(['KASJER']);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Sprzedaż biletu</title>
+    <link rel="stylesheet" href="../css/style.css">
+
+    <!-- 🔐 SESJA -->
+    <script src="../js/session.js"></script>
+    <script>
+        checkSession(['KASJER']);
+    </script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <div class="actions">
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </div>
+</header>
+
+<!-- CONTENT -->
+<main class="container">
+
+    <section class="card">
+        <h2>Sprzedaż biletu</h2>
+
+        <div id="sellInfo">
+            <p>Ładowanie danych rezerwacji...</p>
+        </div>
+
+        <div class="actions">
+            <button class="btn-primary" id="sellBtn">
+                Wystaw i opłać bilet
+            </button>
+
+            <button class="btn-secondary" onclick="goBack()">
+                Wróć do panelu kasjera
+            </button>
+        </div>
+
+        <div id="sellResult"></div>
+    </section>
+
+</main>
+
+<!-- LOGIKA -->
+
+<script src="../js/session.js"></script>
+<script src="../js/cashier.js"></script>
+
+<script>
+    checkSession(['KASJER']);
+</script>
+<script>
+    function goBack() {
+        window.location.href = 'dashboard.html';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rejestracja</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo"><a href="index.html">Lotnisko</a></div>
+    <div class="top-actions">
+        <a href="register.html">Zarejestruj się</a>
+        <a href="login.html">Zaloguj się</a>
+    </div>
+</header>
+
+<main class="register-page">
+
+    <div class="register-card">
+        <h2>Załóż konto</h2>
+
+        <h4>Dane osobowe</h4>
+        <input type="text" id="imie" placeholder="Imię">
+        <input type="text" id="nazwisko" placeholder="Nazwisko">
+        <input type="text" id="pesel" placeholder="PESEL">
+
+        <h4>Dane logowania</h4>
+        <input type="email" id="email" placeholder="Adres e-mail">
+        <input type="text" id="login" placeholder="Login">
+        <input type="password" id="pin" placeholder="6-cyfrowy PIN">
+        <input type="password" id="pin2" placeholder="Powtórz 6-cyfrowy PIN">
+
+        <label class="checkbox">
+            <input type="checkbox" id="terms">
+            Akceptuję regulamin
+        </label>
+
+        <button onclick="register()">Zarejestruj się</button>
+
+        <p class="small">
+            Masz już konto? <a href="login.html">Zaloguj się</a>
+        </p>
+    </div>
+
+</main>
+
+<script src="js/register.js"></script>
+</body>
+</html>

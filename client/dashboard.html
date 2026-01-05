@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel klienta</title>
+    <link rel="stylesheet" href="../css/style.css">
+
+    <!-- SESJA -->
+    <script src="../js/session.js"></script>
+    <script>
+        checkSession(['CLIENT']);
+    </script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <nav class="top-nav">
+        <span class="role-label">Klient</span>
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </nav>
+</header>
+
+<!-- CONTENT -->
+<main class="container">
+
+    <!-- POWITANIE -->
+    <section class="card card-header">
+        <h2 id="welcomeText">Panel klienta</h2>
+        <p>Zarządzaj swoimi biletami i rezerwacjami</p>
+    </section>
+
+    <!-- KAFELKI -->
+    <section class="card-grid">
+
+        <div class="card action-card" onclick="goToTickets()">
+            <h3>Moje bilety</h3>
+            <p>Aktywne bilety i szczegóły lotów</p>
+        </div>
+
+        <div class="card action-card" onclick="goToHistory()">
+            <h3>Historia zamówień</h3>
+            <p>Poprzednie rezerwacje i płatności</p>
+        </div>
+
+        <div class="card action-card" onclick="goToSearch()">
+            <h3>Zarezerwuj nowy lot</h3>
+            <p>Wyszukaj połączenia i kup bilet</p>
+        </div>
+
+    </section>
+
+</main>
+
+<!-- LOGIKA -->
+<script src="../js/app.js"></script>
+<script src="../js/client.js"></script>
+<script>
+    // 🔐 OCHRONA STRONY – TYLKO MENADŻER
+    checkSession(['CLIENT']);
+</script>
+</body>
+</html>

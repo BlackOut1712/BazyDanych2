@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Moje bilety</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <div class="actions">
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </div>
+</header>
+
+<main class="container">
+
+    <section class="card">
+        <h2>Moje bilety</h2>
+
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Numer biletu</th>
+                    <th>Trasa</th>
+                    <th>Data</th>
+                    <th>Godzina</th>
+                    <th>Miejsce</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="ticketsBody">
+                <tr>
+                    <td colspan="6">Ładowanie...</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+<!-- JS Z WSPÓLNEGO FOLDERU -->
+<script src="../js/session.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/tickets.js"></script>
+</body>
+</html>
