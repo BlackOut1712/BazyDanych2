@@ -13,8 +13,16 @@ return new class extends Migration
     {
         Schema::create('samolots', function (Blueprint $table) {
             $table->id();
+
+            // dane samolotu
             $table->string('model', 100);
             $table->integer('liczba_miejsc');
+
+            // 🔒 STATUS SAMOLOTU
+            // true  = AKTYWNY
+            // false = NIEAKTYWNY
+            $table->boolean('status')->default(true);
+
             $table->timestamps();
         });
     }

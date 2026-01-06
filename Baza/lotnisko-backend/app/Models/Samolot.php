@@ -6,8 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Samolot extends Model
 {
-    protected $fillable = ['model', 'liczba_miejsc'];
+    // 👈 JAWNIE OKREŚLONA TABELA
+    protected $table = 'samolots';
 
+    // 👈 MASS ASSIGNMENT (KLUCZ DO UPDATE)
+    protected $fillable = [
+        'model',
+        'liczba_miejsc',
+        'status',
+    ];
+
+    // 👈 RELACJA Z MIEJSCAMI
     public function miejsca()
     {
         return $this->hasMany(Miejsce::class);

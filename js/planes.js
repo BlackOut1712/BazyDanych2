@@ -21,28 +21,28 @@ async function loadPlanes() {
         }
 
         planes.forEach(p => {
-            const status =
-                localStorage.getItem(`plane_status_${p.id}`) || 'AKTYWNY';
-
             const tr = document.createElement('tr');
+
             tr.innerHTML = `
                 <td>${p.model}</td>
                 <td>${p.liczba_miejsc}</td>
                 <td>
                     <span class="role-badge ${
-                        status === 'AKTYWNY' ? 'role-MENADZER' : 'role-KASJER'
+                        p.status ? 'role-MENADZER' : 'role-KASJER'
                     }">
-                        ${status}
+                        ${p.status ? 'AKTYWNY' : 'NIEAKTYWNY'}
                     </span>
                 </td>
                 <td class="actions">
                     <button class="icon-btn" onclick="editPlane(${p.id})">✏️</button>
                 </td>
             `;
+
             body.appendChild(tr);
         });
 
-    } catch {
+    } catch (e) {
+        console.error(e);
         body.innerHTML = `<tr><td colspan="4">Błąd pobierania danych</td></tr>`;
     }
 }
@@ -54,41 +54,42 @@ async function loadPlanes() {
 async function savePlane() {
     const id = document.getElementById('planeId').value;
     const model = document.getElementById('model').value.trim();
-    const liczba = document.getElementById('liczba_miejsc').value;
-    const status = document.getElementById('status').value;
+    const liczba = Number(document.getElementById('liczba_miejsc').value);
+    const statusSelect = document.getElementById('status').value;
     const result = document.getElementById('planeResult');
 
-    if (!model || !liczba) {
+    if (!model || !liczba || liczba < 1) {
         result.innerHTML = '<p style="color:red">Uzupełnij wszystkie pola</p>';
         return;
     }
 
+    const payload = {
+        model,
+        liczba_miejsc: liczba,
+        status: statusSelect === 'AKTYWNY'
+    };
+
     try {
         if (id) {
-            // EDYCJA
+            // ✏️ EDYCJA
             await apiFetch(`/samoloty/${id}`, {
                 method: 'PUT',
-                body: JSON.stringify({ model, liczba_miejsc: liczba })
+                body: JSON.stringify(payload)
             });
         } else {
-            // DODAWANIE
-            const newPlane = await apiFetch('/samoloty', {
+            // ➕ DODAWANIE
+            await apiFetch('/samoloty', {
                 method: 'POST',
-                body: JSON.stringify({ model, liczba_miejsc: liczba })
+                body: JSON.stringify(payload)
             });
-
-            localStorage.setItem(`plane_status_${newPlane.id}`, status);
         }
 
-        if (id) {
-            localStorage.setItem(`plane_status_${id}`, status);
-        }
-
-        result.innerHTML = '<p style="color:green">Zapisano</p>';
+        result.innerHTML = '<p style="color:green">Zapisano poprawnie</p>';
         hideAddPlaneForm();
         loadPlanes();
 
-    } catch {
+    } catch (e) {
+        console.error(e);
         result.innerHTML = '<p style="color:red">Błąd zapisu</p>';
     }
 }
@@ -97,24 +98,29 @@ async function savePlane() {
    EDYCJA
 ====================================================== */
 
-function editPlane(id) {
-    const rows = document.querySelectorAll('#planesBody tr');
-
-    rows.forEach(tr => {
-        const btn = tr.querySelector('.icon-btn');
-        if (!btn) return;
-
-        if (!btn.getAttribute('onclick').includes(id)) return;
+async function editPlane(id) {
+    try {
+        const planes = await apiFetch('/samoloty');
+        const p = planes.find(x => x.id === id);
+        if (!p) return;
 
         document.getElementById('planeFormTitle').innerText = 'Edytuj samolot';
-        document.getElementById('planeId').value = id;
-        document.getElementById('model').value = tr.children[0].innerText;
-        document.getElementById('liczba_miejsc').value = tr.children[1].innerText;
-
+        document.getElementById('planeId').value = p.id;
+        document.getElementById('model').value = p.model;
+        document.getElementById('liczba_miejsc').value = p.liczba_miejsc;
         document.getElementById('status').value =
-            localStorage.getItem(`plane_status_${id}`) || 'AKTYWNY';
+            p.status ? 'AKTYWNY' : 'NIEAKTYWNY';
 
         document.getElementById('planeResult').innerHTML = '';
         document.getElementById('addPlaneSection').style.display = 'block';
-    });
+
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        });
+
+    } catch (e) {
+        console.error(e);
+        alert('Błąd wczytywania danych samolotu');
+    }
 }

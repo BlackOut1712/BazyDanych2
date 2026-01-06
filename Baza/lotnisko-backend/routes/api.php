@@ -61,3 +61,10 @@ Route::get('/pracownicy', [PracownikController::class, 'index']);
 Route::post('/pracownicy', [PracownikController::class, 'store']);
 Route::put('/pracownicy/{id}', [PracownikController::class, 'update']);
 Route::put('/pracownicy/{id}/status', [PracownikController::class, 'toggleStatus']);
+
+Route::get('/samoloty', [SamolotController::class, 'index']);
+Route::post('/samoloty', [SamolotController::class, 'store']);
+Route::put('/samoloty/{id}', [SamolotController::class, 'update']);
+Route::get('/samoloty', [SamolotController::class, 'index']);
+Route::post('/samoloty', [SamolotController::class, 'store']);
+Route::put('/samoloty/{id}', [SamolotController::class, 'update']);
