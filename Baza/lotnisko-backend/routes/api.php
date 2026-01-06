@@ -22,6 +22,7 @@ Route::post('/bilety/zwrot', [PlatnoscController::class, 'zwrot']);
 Route::get('/loty/{lot}/miejsca', [MiejsceController::class, 'miejscaDlaLotu']);
 
 Route::post('/platnosci', [PlatnoscController::class, 'store']);
+Route::put('/pracownicy/{id}', [PracownikController::class, 'update']);
 
 Route::post('/bilety', [BiletController::class, 'store']);
 Route::get('/bilety', [BiletController::class, 'index']);
@@ -55,3 +56,8 @@ Route::post('/lotniska', [LotniskoController::class, 'store']);
 Route::get('/lotniska/{id}', [LotniskoController::class, 'show']);
 Route::put('/lotniska/{id}', [LotniskoController::class, 'update']);
 Route::delete('/lotniska/{id}', [LotniskoController::class, 'destroy']);
+
+Route::get('/pracownicy', [PracownikController::class, 'index']);
+Route::post('/pracownicy', [PracownikController::class, 'store']);
+Route::put('/pracownicy/{id}', [PracownikController::class, 'update']);
+Route::put('/pracownicy/{id}/status', [PracownikController::class, 'toggleStatus']);

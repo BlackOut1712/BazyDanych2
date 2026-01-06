@@ -11,32 +11,46 @@ return new class extends Migration
      */
     public function up(): void
     {
-    Schema::create('pracowniks', function (Blueprint $table) {
-        $table->id();
+        Schema::create('pracowniks', function (Blueprint $table) {
+            $table->id();
 
-        // dane osobowe
-        $table->string('imie', 50);
-        $table->string('nazwisko', 50);
-        $table->string('pesel', 11)->unique();
-        $table->string('adres', 255);
-        $table->string('telefon', 20);
-        $table->string('email')->unique();
+            // ===============================
+            // DANE OSOBOWE
+            // ===============================
+            $table->string('imie', 50);
+            $table->string('nazwisko', 50);
+            $table->string('pesel', 11)->unique();
+            $table->string('adres', 255);
+            $table->string('telefon', 20);
+            $table->string('email')->unique();
 
-        // dane logowania
-        $table->string('login', 50)->unique();
-        $table->string('haslo');
+            // ===============================
+            // DANE LOGOWANIA
+            // ===============================
+            $table->string('login', 50)->unique();
+            $table->string('haslo');
 
-        // dane kadrowe
-        $table->date('data_zatrudnienia');
-        $table->date('data_zwolnienia')->nullable();
+            // ===============================
+            // DANE KADROWE
+            // ===============================
+            $table->date('data_zatrudnienia');
+            $table->date('data_zwolnienia')->nullable();
 
-        // rola w systemie
-        $table->enum('rola', ['KASJER', 'MENADZER']);
+            // ===============================
+            // ROLA W SYSTEMIE
+            // ===============================
+            $table->enum('rola', ['KASJER', 'MENADZER']);
 
-        $table->timestamps();
-    });
+            // ===============================
+            // STATUS KONTA
+            // true  = aktywny
+            // false = zablokowany
+            // ===============================
+            $table->boolean('status')->default(true);
+
+            $table->timestamps();
+        });
     }
-
 
     /**
      * Reverse the migrations.

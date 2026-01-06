@@ -39,7 +39,8 @@ async function loadWorkers() {
                 </td>
                 <td class="actions">
                     <button class="icon-btn" onclick="editWorker(${w.id})">✏️</button>
-                    <button class="icon-btn danger" onclick="toggleWorker(${w.id})">
+                    <button class="icon-btn danger" onclick="toggleWorker(${w.id})"
+                        title="${w.status ? 'Zablokuj' : 'Odblokuj'}">
                         ${w.status ? '🔒' : '🔓'}
                     </button>
                 </td>
@@ -55,7 +56,7 @@ async function loadWorkers() {
 }
 
 /* ======================================================
-   BLOKADA / ODBLOKOWANIE
+   BLOKADA / ODBLOKOWANIE (JEDYNE MIEJSCE ZMIANY STATUSU)
 ====================================================== */
 
 async function toggleWorker(id) {
@@ -75,7 +76,7 @@ async function toggleWorker(id) {
 }
 
 /* ======================================================
-   EDYCJA
+   EDYCJA (BEZ STATUSU)
 ====================================================== */
 
 async function editWorker(id) {
@@ -85,18 +86,28 @@ async function editWorker(id) {
         if (!w) return;
 
         document.getElementById('formTitle').innerText = 'Edytuj pracownika';
-        document.getElementById('imie').value = w.imie;
-        document.getElementById('nazwisko').value = w.nazwisko;
-        document.getElementById('pesel').value = w.pesel;
-        document.getElementById('adres').value = w.adres;
-        document.getElementById('telefon').value = w.telefon;
-        document.getElementById('email').value = w.email;
-        document.getElementById('login').value = w.login;
-        document.getElementById('rola').value = w.rola;
-        document.getElementById('aktywny').value = w.status ? '1' : '0';
-        document.getElementById('haslo').value = '';
 
-        document.getElementById('workerId').value = w.id;
+        imie.value = w.imie;
+        nazwisko.value = w.nazwisko;
+        pesel.value = w.pesel;
+        adres.value = w.adres;
+        telefon.value = w.telefon;
+        email.value = w.email;
+        login.value = w.login;
+        rola.value = w.rola;
+        haslo.value = '';
+
+        // 🔒 PESEL tylko do podglądu
+        pesel.disabled = true;
+
+        let idField = document.getElementById('workerId');
+        if (!idField) {
+            idField = document.createElement('input');
+            idField.type = 'hidden';
+            idField.id = 'workerId';
+            document.body.appendChild(idField);
+        }
+        idField.value = w.id;
 
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 
@@ -107,7 +118,7 @@ async function editWorker(id) {
 }
 
 /* ======================================================
-   ZAPIS (DODAJ / EDYTUJ)
+   ZAPIS (STATUSU TU NIE MA)
 ====================================================== */
 
 async function saveWorker() {
@@ -117,13 +128,11 @@ async function saveWorker() {
     const data = {
         imie: imie.value.trim(),
         nazwisko: nazwisko.value.trim(),
-        pesel: pesel.value.trim(),
         adres: adres.value.trim(),
         telefon: telefon.value.trim(),
         email: email.value.trim(),
         login: login.value.trim(),
-        rola: rola.value,
-        status: aktywny.value === '1',
+        rola: rola.value
     };
 
     if (haslo.value.trim()) {
@@ -138,8 +147,14 @@ async function saveWorker() {
                 body: JSON.stringify(data)
             });
         } else {
-            // ➕ DODAWANIE
-            data.haslo = haslo.value;
+            // ➕ DODAWANIE (zawsze aktywny)
+            if (!data.haslo) {
+                alert('Hasło jest wymagane przy dodawaniu pracownika');
+                return;
+            }
+
+            data.pesel = pesel.value.trim();
+
             await apiFetch('/pracownicy', {
                 method: 'POST',
                 body: JSON.stringify(data)
@@ -157,15 +172,18 @@ async function saveWorker() {
 }
 
 /* ======================================================
-   RESET FORMULARZA
+   RESET
 ====================================================== */
 
 function resetForm() {
     document.getElementById('formTitle').innerText = 'Dodaj pracownika';
-    document.querySelectorAll('.form-grid input').forEach(i => i.value = '');
-    document.getElementById('rola').value = 'KASJER';
-    document.getElementById('aktywny').value = '1';
-    document.getElementById('formResult').innerHTML = '';
+    document.querySelectorAll('.form-grid input').forEach(i => {
+        i.value = '';
+        i.disabled = false;
+    });
+    rola.value = 'KASJER';
+    formResult.innerHTML = '';
+
     const idField = document.getElementById('workerId');
     if (idField) idField.value = '';
 }

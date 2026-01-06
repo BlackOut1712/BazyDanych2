@@ -33,24 +33,32 @@ class AuthController extends Controller
             }
 
             return response()->json([
-                'role' => 'client',
+                'role' => 'CLIENT', // 🔧 ujednolicone pod frontend
                 'user' => $klient,
             ]);
         }
 
         // =========================
-        // 👉 PRACOWNIK (LOGIN + PIN)
+        // 👉 PRACOWNIK (LOGIN + HASŁO)
         // =========================
         $pracownik = Pracownik::where('login', $identifier)->first();
 
+        // ❌ brak użytkownika lub złe hasło
         if (!$pracownik || !Hash::check($secret, $pracownik->haslo)) {
             return response()->json([
                 'message' => 'Niepoprawny login lub hasło'
             ], 401);
         }
 
+        // 🔒 BLOKADA KONTA (TO BYŁO BRAKUJĄCE!)
+        if ((int) $pracownik->status !== 1) {
+            return response()->json([
+                'message' => 'Konto pracownika jest zablokowane'
+            ], 403);
+        }
+
         return response()->json([
-            'role' => $pracownik->rola, // admin / kasjer
+            'role' => strtoupper($pracownik->rola), // KASJER / MENADZER
             'user' => $pracownik,
         ]);
     }

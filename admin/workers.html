@@ -2,23 +2,38 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Pracownicy</title>
+    <title>Zarządzanie pracownikami</title>
     <link rel="stylesheet" href="../css/style.css">
+
+    <!-- SESJA -->
+    <script src="../js/session.js"></script>
+    <script>
+        checkSession(['MENADZER']);
+    </script>
 </head>
 <body>
 
+<!-- GÓRNY PASEK -->
 <header class="top-bar">
     <div class="logo">Lotnisko</div>
-    <div class="actions">
+    <nav class="top-nav">
+        <span class="role-label">Menadżer</span>
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
-    </div>
+    </nav>
 </header>
 
+<!-- ZAWARTOŚĆ -->
 <main class="container">
+
+    <!-- NAGŁÓWEK -->
+    <section class="card card-header">
+        <h2>Zarządzanie pracownikami</h2>
+        <p>Dodawanie, edycja oraz blokowanie kont pracowników</p>
+    </section>
 
     <!-- LISTA PRACOWNIKÓW -->
     <section class="card">
-        <h2>Pracownicy</h2>
+        <h3>Lista pracowników</h3>
 
         <div class="table-wrapper">
             <table class="employees-table">
@@ -29,12 +44,12 @@
                         <th>Login</th>
                         <th>Rola</th>
                         <th>Status</th>
-                        <th style="width:120px">Akcje</th>
+                        <th>Akcje</th>
                     </tr>
                 </thead>
                 <tbody id="workersBody">
                     <tr>
-                        <td colspan="6" class="table-loading">Ładowanie...</td>
+                        <td colspan="6" class="table-loading">Ładowanie danych…</td>
                     </tr>
                 </tbody>
             </table>
@@ -43,7 +58,7 @@
 
     <!-- FORMULARZ -->
     <section class="card">
-        <h2 id="formTitle">Dodaj pracownika</h2>
+        <h3 id="formTitle">Dodaj pracownika</h3>
 
         <div class="form-grid">
             <input type="text" id="imie" placeholder="Imię">
@@ -60,27 +75,30 @@
                 <option value="MENADZER">Menadżer</option>
             </select>
 
-            <!-- 🔒 BLOKADA -->
-            <select id="aktywny">
+            <!--<select id="status">
                 <option value="1">Aktywny</option>
                 <option value="0">Zablokowany</option>
-            </select>
+            </select>--> 
         </div>
-
-        <button class="btn-primary" onclick="saveWorker()">
-            Zapisz
-        </button>
-
-        <div id="formResult" class="form-result"></div>
 
         <div class="actions">
-            <button class="btn-secondary" onclick="goBack()">Wróć</button>
+            <button class="btn-primary" onclick="saveWorker()">Zapisz</button>
+            <button class="btn-secondary" onclick="resetForm()">Wyczyść</button>
         </div>
+
+        <div id="formResult" class="form-result"></div>
+    </section>
+
+    <!-- POWRÓT -->
+    <section class="actions">
+        <button class="btn-secondary" onclick="goBack()">
+            ← Wróć do panelu menadżera
+        </button>
     </section>
 
 </main>
 
-<script src="../js/session.js"></script>
+<!-- LOGIKA -->
 <script src="../js/app.js"></script>
 <script src="../js/workers.js"></script>
 

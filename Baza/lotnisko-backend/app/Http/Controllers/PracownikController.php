@@ -8,12 +8,11 @@ use Illuminate\Support\Facades\Hash;
 
 class PracownikController extends Controller
 {
-    /**
-     * 🔐 AUTORYZACJA RÓL (zamiennik middleware)
-     */
+    /* ======================================================
+       AUTORYZACJA RÓL (zamiennik middleware)
+    ====================================================== */
     private function requireRole(Request $request, array $roles): void
     {
-        // obsługa różnych nagłówków (frontend + postman)
         $role =
             $request->header('X-User-Role')
             ?? $request->header('X-Role')
@@ -21,35 +20,37 @@ class PracownikController extends Controller
             ?? $request->header('ROLE');
 
         if (!$role) {
-            abort(401, 'Brak roli użytkownika');
+            abort(403, 'Brak roli użytkownika');
         }
 
-        if (!in_array(strtoupper($role), $roles)) {
+        if (!in_array(strtoupper($role), array_map('strtoupper', $roles))) {
             abort(403, 'Brak uprawnień');
         }
     }
 
-    /**
-     * GET /api/pracownicy
-     * 👑 tylko MENADŻER
-     */
+    /* ======================================================
+       LISTA PRACOWNIKÓW
+       👑 tylko MENADŻER
+    ====================================================== */
     public function index(Request $request)
     {
         $this->requireRole($request, ['MENADZER']);
-        return Pracownik::all();
+
+        return response()->json(
+            Pracownik::orderBy('nazwisko')->get()
+        );
     }
 
-
-
-    /**
-     * POST /api/pracownicy
-     * 👑 tylko MENADŻER
-     */
+    /* ======================================================
+       DODAWANIE PRACOWNIKA
+       👑 tylko MENADŻER
+       (status domyślnie = AKTYWNY)
+    ====================================================== */
     public function store(Request $request)
     {
         $this->requireRole($request, ['MENADZER']);
 
-        $validated = $request->validate([
+        $data = $request->validate([
             'imie' => 'required|string|max:50',
             'nazwisko' => 'required|string|max:50',
             'pesel' => 'required|string|size:11|unique:pracowniks,pesel',
@@ -60,15 +61,75 @@ class PracownikController extends Controller
             'login' => 'required|string|max:50|unique:pracowniks,login',
             'haslo' => 'required|string|min:6',
 
-            'data_zatrudnienia' => 'required|date',
             'rola' => 'required|in:KASJER,MENADZER',
         ]);
 
-        // 🔐 hash hasła
-        $validated['haslo'] = Hash::make($validated['haslo']);
+        $data['haslo'] = Hash::make($data['haslo']);
+        $data['status'] = true; // 🔒 ZAWSZE AKTYWNY NA START
+        $data['data_zatrudnienia'] = now()->toDateString();
 
-        $pracownik = Pracownik::create($validated);
+        $pracownik = Pracownik::create($data);
 
         return response()->json($pracownik, 201);
+    }
+
+    /* ======================================================
+       EDYCJA PRACOWNIKA
+       👑 tylko MENADŻER
+       (PESEL NIEEDYTOWALNY)
+    ====================================================== */
+    public function update(Request $request, $id)
+    {
+        $this->requireRole($request, ['MENADZER']);
+
+        $p = Pracownik::findOrFail($id);
+
+        $data = $request->validate([
+            'imie' => 'sometimes|string|max:50',
+            'nazwisko' => 'sometimes|string|max:50',
+            'adres' => 'sometimes|string|max:255',
+            'telefon' => 'sometimes|string|max:20',
+
+            'email' => 'sometimes|email|unique:pracowniks,email,' . $p->id,
+            'login' => 'sometimes|string|max:50|unique:pracowniks,login,' . $p->id,
+
+            'rola' => 'sometimes|in:KASJER,MENADZER',
+            'haslo' => 'nullable|string|min:6',
+        ]);
+
+        if (!empty($data['haslo'])) {
+            $data['haslo'] = Hash::make($data['haslo']);
+        } else {
+            unset($data['haslo']);
+        }
+
+        $p->update($data);
+
+        return response()->json([
+            'message' => 'Dane pracownika zaktualizowane',
+            'pracownik' => $p
+        ]);
+    }
+
+    /* ======================================================
+       BLOKADA / ODBLOKOWANIE KONTA
+       👑 tylko MENADŻER
+       (JEDYNY SPOSÓB ZMIANY STATUSU)
+    ====================================================== */
+    public function toggleStatus(Request $request, $id)
+    {
+        $this->requireRole($request, ['MENADZER']);
+
+        $p = Pracownik::findOrFail($id);
+
+        $p->status = !$p->status;
+        $p->save();
+
+        return response()->json([
+            'message' => $p->status
+                ? 'Konto odblokowane'
+                : 'Konto zablokowane',
+            'status' => (bool) $p->status
+        ]);
     }
 }
