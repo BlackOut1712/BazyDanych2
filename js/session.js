@@ -1,11 +1,18 @@
 const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minut
-
+console.log("UWAGA");
 /* ======================================================
    AKTYWNOŚĆ
 ====================================================== */
 
 function updateActivity() {
-    localStorage.setItem('lastActivity', Date.now().toString());
+    const now = Date.now().toString();
+    
+    // Sprawdzamy, gdzie zapisana jest sesja (na podstawie flagi 'remember')
+    if (localStorage.getItem('remember')) {
+        localStorage.setItem('lastActivity', now);
+    } else {
+        sessionStorage.setItem('lastActivity', now);
+    }
 }
 
 /* ======================================================
@@ -13,12 +20,12 @@ function updateActivity() {
 ====================================================== */
 
 function getRole() {
-    const role = localStorage.getItem('role');
+    const role = getSessionItem('role');
     return role ? role.trim().toUpperCase() : null;
 }
 
 function getUser() {
-    const user = localStorage.getItem('user');
+    const user = getSessionItem('user');
     return user ? JSON.parse(user) : null;
 }
 
@@ -28,9 +35,15 @@ function getUser() {
 ====================================================== */
 
 function checkSession(roles = []) {
-    const role = getRole();
-    const lastActivity = Number(localStorage.getItem('lastActivity'));
 
+    console.log("Sprawdzam sesję...");
+    console.log("Rola z getSessionItem:", getSessionItem('role'));
+    console.log("Aktywność z getSessionItem:", getSessionItem('lastActivity'));
+
+    const role = getRole();
+    const lastActivity = Number(getSessionItem('lastActivity'));
+    
+    const isRemembered = localStorage.getItem('remember');
     // brak sesji
     if (!role || !lastActivity) {
         logout();
@@ -38,7 +51,7 @@ function checkSession(roles = []) {
     }
 
     // timeout
-    if (Date.now() - lastActivity > SESSION_TIMEOUT) {
+    if (!isRemembered && Date.now() - lastActivity > SESSION_TIMEOUT) {
         alert('Sesja wygasła');
         logout();
         return;
@@ -55,6 +68,7 @@ function checkSession(roles = []) {
     }
 
     updateActivity();
+    
 }
 
 /* ======================================================
@@ -62,20 +76,33 @@ function checkSession(roles = []) {
 ====================================================== */
 
 function logout() {
+    // 1. Czyścimy oba magazyny
     localStorage.clear();
+    sessionStorage.clear();
 
-    let basePath;
+    // 2. Inteligentne przekierowanie
+    // Sprawdzamy, czy jesteśmy głębiej w strukturze folderów (np. w /client/)
+    const path = window.location.pathname;
 
-    if (location.protocol === 'file:') {
-        // cofamy się do katalogu głównego projektu
-        basePath = location.href.substring(0, location.href.lastIndexOf('/'));
-        basePath = basePath.substring(0, basePath.lastIndexOf('/'));
+    if (path.includes('/client/') || 
+        path.includes('/admin/') || 
+        path.includes('/cashier/')) {
+        
+        // Jeśli jesteśmy w podfolderze, musimy wyjść "w górę"
+        window.location.href = '../index.html';
+        
     } else {
-        basePath = location.origin;
+        // Jeśli jesteśmy w głównym folderze (np. login.html), zostajemy tu
+        window.location.href = 'index.html';
     }
-
-    window.location.href = basePath + '/index.html';
 }
+
+/**
+ * Pobiera dane z sessionStorage LUB localStorage (priorytet ma sesja aktywna)
+ */
+function getSessionItem(key) {
+    return sessionStorage.getItem(key) || localStorage.getItem(key);
+};
 
 /* ======================================================
    NASŁUCH AKTYWNOŚCI
@@ -84,3 +111,4 @@ function logout() {
 ['click', 'mousemove', 'keydown'].forEach(event => {
     document.addEventListener(event, updateActivity);
 });
+

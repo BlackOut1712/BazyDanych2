@@ -83,7 +83,7 @@ async function searchFlights() {
  * Funkcja do obsługi przycisku "Kup bilet"
  */
 function goToSeats(flight) {
-    const role = localStorage.getItem('role');
+    const role = getSessionItem('role');
 
     if (!role) {
         alert('Aby kupić bilet musisz się zalogować');
@@ -96,7 +96,7 @@ function goToSeats(flight) {
 }
 
 async function apiFetch(endpoint, options = {}) {
-    const role = localStorage.getItem('role');
+    const role = getSessionItem('role');
 
     const headers = {
         'Content-Type': 'application/json',
@@ -123,4 +123,11 @@ async function apiFetch(endpoint, options = {}) {
     }
 
     return response.json();
+}
+
+/**
+ * Pobiera dane z sessionStorage LUB localStorage (priorytet ma sesja aktywna)
+ */
+function getSessionItem(key) {
+    return sessionStorage.getItem(key) || localStorage.getItem(key);
 }
