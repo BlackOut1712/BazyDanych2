@@ -14,23 +14,23 @@ use Illuminate\Support\Facades\Hash;
 class PlatnoscController extends Controller
 {
     /**
-     * 🔐 AUTORYZACJA RÓL (zamiennik middleware)
+     * 🔐 AUTORYZACJA RÓL
      */
     private function requireRole(Request $request, array $roles): void
     {
-        $role = $request->header('X-User-Role');
+        $role = strtoupper($request->header('X-User-Role'));
 
         if (!$role) {
             abort(401, 'Brak roli użytkownika');
         }
 
-        if (!in_array($role, $roles)) {
+        if (!in_array($role, array_map('strtoupper', $roles))) {
             abort(403, 'Brak uprawnień');
         }
     }
 
     /**
-     * 🔁 lokalne wygaszanie rezerwacji
+     * 🔁 WYGASZANIE REZERWACJI
      */
     private function wygasRezerwacje(): void
     {
@@ -44,12 +44,12 @@ class PlatnoscController extends Controller
     }
 
     /**
-     * POST /api/platnosci
-     * client / cashier / admin
+     * 💳 POST /api/platnosci
+     * CLIENT / KASJER / MENADZER / ADMIN
      */
     public function store(Request $request)
     {
-        $this->requireRole($request, ['client', 'cashier', 'admin']);
+        $this->requireRole($request, ['CLIENT', 'KASJER', 'MENADZER', 'ADMIN']);
 
         $this->wygasRezerwacje();
 
@@ -65,7 +65,8 @@ class PlatnoscController extends Controller
             $bilet = Bilet::lockForUpdate()->findOrFail($validated['bilet_id']);
             $rezerwacja = Rezerwacja::lockForUpdate()->findOrFail($bilet->rezerwacja_id);
 
-            if ($rezerwacja->status !== 'OCZEKUJE') {
+            // ✅ POPRAWKA: po wystawieniu biletu rezerwacja jest POTWIERDZONA
+            if (!in_array($rezerwacja->status, ['OCZEKUJE', 'POTWIERDZONA'])) {
                 throw ValidationException::withMessages([
                     'rezerwacja' => 'Rezerwacja nie jest aktywna',
                 ]);
@@ -100,12 +101,12 @@ class PlatnoscController extends Controller
     }
 
     /**
-     * POST /api/bilety/zwrot
-     * cashier / admin
+     * 🔄 POST /api/bilety/zwrot
+     * KASJER / MENADZER / ADMIN
      */
     public function zwrot(Request $request)
     {
-        $this->requireRole($request, ['cashier', 'admin']);
+        $this->requireRole($request, ['KASJER', 'MENADZER', 'ADMIN']);
 
         $validated = $request->validate([
             'numer_biletu' => 'required|string|exists:bilets,numer_biletu',
@@ -137,13 +138,8 @@ class PlatnoscController extends Controller
                 ]);
             }
 
-            $bilet->update([
-                'status' => 'ZWROCONY',
-            ]);
-
-            $rezerwacja->update([
-                'status' => 'ANULOWANA',
-            ]);
+            $bilet->update(['status' => 'ZWRÓCONY']);
+            $rezerwacja->update(['status' => 'ANULOWANA']);
 
             return response()->json([
                 'message' => 'Zwrot biletu wykonany poprawnie',
@@ -151,12 +147,14 @@ class PlatnoscController extends Controller
             ]);
         });
     }
+
+    /**
+     * 📋 LISTA PŁATNOŚCI
+     */
     public function index()
     {
         return response()->json(
             Platnosc::with('bilet')->get()
         );
     }
-
-
 }

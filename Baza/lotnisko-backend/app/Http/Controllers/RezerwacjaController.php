@@ -9,9 +9,9 @@ use Illuminate\Validation\ValidationException;
 
 class RezerwacjaController extends Controller
 {
-    /**
-     * 🔐 AUTORYZACJA RÓL (zamiennik middleware)
-     */
+    /* ======================================================
+       🔐 AUTORYZACJA RÓL (UODPORNIENIE NA RÓŻNE HEADERY)
+    ====================================================== */
     private function requireRole(Request $request, array $roles): void
     {
         $role = $request->header('X-User-Role');
@@ -20,14 +20,17 @@ class RezerwacjaController extends Controller
             abort(401, 'Brak roli użytkownika');
         }
 
+        $role = strtoupper($role);
+        $roles = array_map('strtoupper', $roles);
+
         if (!in_array($role, $roles)) {
             abort(403, 'Brak uprawnień');
         }
     }
 
-    /**
-     * 🔁 lokalne wygaszanie rezerwacji
-     */
+    /* ======================================================
+       🔁 WYGASZANIE REZERWACJI
+    ====================================================== */
     private function wygasRezerwacje(): void
     {
         Rezerwacja::where('status', 'OCZEKUJE')
@@ -39,27 +42,40 @@ class RezerwacjaController extends Controller
             ]);
     }
 
-    /**
-     * GET /api/rezerwacje
-     */
-    public function index()
+    /* ======================================================
+       GET /api/rezerwacje
+    ====================================================== */
+    public function index(Request $request)
     {
         $this->wygasRezerwacje();
-        return Rezerwacja::all();
+
+        return Rezerwacja::with([
+            'klient',
+            'miejsce',
+            'lot.trasa.lotniskoWylotu',
+            'lot.trasa.lotniskoPrzylotu'
+        ])->get();
     }
 
-    /**
-     * GET /api/rezerwacje/{id}
-     */
-    public function show($id)
+    /* ======================================================
+       GET /api/rezerwacje/{id}
+       ⬅️ KLUCZOWE DLA sell.html
+    ====================================================== */
+    public function show(Request $request, $id)
     {
         $this->wygasRezerwacje();
-        return Rezerwacja::findOrFail($id);
+
+        return Rezerwacja::with([
+            'klient',
+            'miejsce',
+            'lot.trasa.lotniskoWylotu',
+            'lot.trasa.lotniskoPrzylotu'
+        ])->findOrFail($id);
     }
 
-    /**
-     * POST /api/rezerwacje
-     */
+    /* ======================================================
+       POST /api/rezerwacje
+    ====================================================== */
     public function store(Request $request)
     {
         $this->wygasRezerwacje();
@@ -103,12 +119,12 @@ class RezerwacjaController extends Controller
         });
     }
 
-    /**
-     * PUT /api/rezerwacje/{id}
-     */
+    /* ======================================================
+       PUT /api/rezerwacje/{id}
+    ====================================================== */
     public function update(Request $request, $id)
     {
-        $this->requireRole($request, ['cashier', 'admin']);
+        $this->requireRole($request, ['KASJER', 'MENADZER', 'ADMIN']);
 
         $rezerwacja = Rezerwacja::findOrFail($id);
 
@@ -122,12 +138,12 @@ class RezerwacjaController extends Controller
         return response()->json($rezerwacja);
     }
 
-    /**
-     * DELETE /api/rezerwacje/{id}
-     */
+    /* ======================================================
+       DELETE /api/rezerwacje/{id}
+    ====================================================== */
     public function destroy(Request $request, $id)
     {
-        $this->requireRole($request, ['admin']);
+        $this->requireRole($request, ['ADMIN']);
 
         Rezerwacja::findOrFail($id)->delete();
 
@@ -136,25 +152,25 @@ class RezerwacjaController extends Controller
         ]);
     }
 
-    /**
-     * F – rezerwacje do obsługi przez pracownika (kasjer / menadżer)
-     * GET /api/pracownik/rezerwacje
-     */
+    /* ======================================================
+       👨‍💼 REZERWACJE DLA KASJERA
+       GET /api/pracownik/rezerwacje
+    ====================================================== */
     public function pracownikRezerwacje(Request $request)
     {
-        $this->requireRole($request, ['cashier', 'admin']);
+        $this->requireRole($request, ['KASJER', 'MENADZER']);
 
         $this->wygasRezerwacje();
 
         $rezerwacje = Rezerwacja::with([
-                'klient',
-                'miejsce',
-                'lot.trasa.lotniskoWylotu',
-                'lot.trasa.lotniskoPrzylotu'
-            ])
-            ->whereIn('status', ['OCZEKUJE', 'POTWIERDZONA'])
-            ->orderByDesc('data_rezerwacji')
-            ->get();
+            'klient',
+            'miejsce',
+            'lot.trasa.lotniskoWylotu',
+            'lot.trasa.lotniskoPrzylotu'
+        ])
+        ->whereIn('status', ['OCZEKUJE', 'POTWIERDZONA'])
+        ->orderByDesc('data_rezerwacji')
+        ->get();
 
         return response()->json($rezerwacje);
     }

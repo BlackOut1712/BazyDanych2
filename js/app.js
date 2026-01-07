@@ -1,74 +1,102 @@
 const API_URL = 'http://127.0.0.1:8000/api';
 
 /**
- * Klikane przyciskiem "Szukaj"
+ * Klikane przyciskiem "Szukaj" - Wersja KAFELKOWA
  */
-function searchFlights() {
-    const date = document.getElementById('date').value;
-    const from = document.getElementById('from').value;
-    const to = document.getElementById('to').value;
-
-    // Na start: pobieramy wszystkie loty
-    fetch(`${API_URL}/loty`)
-        .then(res => res.json())
-        .then(loty => {
-            // Filtrowanie po froncie (na razie)
-            const filtered = loty.filter(lot => {
-                const matchDate = date ? lot.data === date : true;
-                const matchFrom = from
-                    ? lot.trasa?.lotnisko_wylotu?.miasto
-                          ?.toLowerCase()
-                          .includes(from.toLowerCase())
-                    : true;
-                const matchTo = to
-                    ? lot.trasa?.lotnisko_przylotu?.miasto
-                          ?.toLowerCase()
-                          .includes(to.toLowerCase())
-                    : true;
-
-                return matchDate && matchFrom && matchTo;
-            });
-
-            renderFlights(filtered);
-        })
-        .catch(err => {
-            console.error('Błąd API:', err);
-        });
-}
-
-/**
- * Renderowanie wyników
- */
-function renderFlights(loty) {
-    const container = document.getElementById('resultsList');
-    container.innerHTML = '';
-
-    if (loty.length === 0) {
-        container.innerHTML = 'Brak wyników.';
+async function searchFlights() {
+    // 1. Szukamy kontenera o nowym ID
+    const container = document.getElementById('flights-container');
+    
+    if (!container) {
+        console.error("Błąd: Nie znaleziono <div id='flights-container'> w HTML");
         return;
     }
 
-    loty.forEach(lot => {
-        const row = document.createElement('div');
-        row.className = 'results-row';
+    container.innerHTML = '<div style="text-align:center; padding:20px;">Ładowanie...</div>';
 
-        row.innerHTML = `
-            <span>${lot.godzina}</span>
-            <span>
-                ${lot.trasa?.lotnisko_wylotu?.miasto}
-                →
-                ${lot.trasa?.lotnisko_przylotu?.miasto}
-            </span>
-            <span>${lot.data}</span>
-            <span>350 zł</span>
-            <span><button>Kup</button></span>
-        `;
+    // Pobieramy dane z formularza
+    const dateInput = document.getElementById('date')?.value || '';
+    const fromInput = document.getElementById('from')?.value.toLowerCase() || '';
+    const toInput = document.getElementById('to')?.value.toLowerCase() || '';
 
-        container.appendChild(row);
-    });
+    try {
+        // Używamy apiFetch zdefiniowanego na dole tego pliku
+        const flights = await apiFetch('/loty');
+
+        const filtered = flights.filter(flight => {
+            const matchDate = dateInput ? flight.data === dateInput : true;
+            
+            const cityFrom = flight.trasa?.lotnisko_wylotu?.miasto?.toLowerCase() || '';
+            const cityTo = flight.trasa?.lotnisko_przylotu?.miasto?.toLowerCase() || '';
+
+            const matchFrom = fromInput ? cityFrom.includes(fromInput) : true;
+            const matchTo = toInput ? cityTo.includes(toInput) : true;
+
+            return matchDate && matchFrom && matchTo;
+        });
+
+        container.innerHTML = '';
+
+        if (!filtered.length) {
+            container.innerHTML = '<div class="results-empty" style="text-align:center; padding:30px;">Brak wyników.</div>';
+            return;
+        }
+
+        // 2. Generowanie KAFELKÓW (z klasą flight-card)
+        filtered.forEach(flight => {
+            const cityFrom = flight.trasa?.lotnisko_wylotu?.miasto || 'Nieznane';
+            const cityTo = flight.trasa?.lotnisko_przylotu?.miasto || 'Nieznane';
+            const price = flight.cena || 350; 
+            
+            // Symulacja godziny przylotu
+            let arrivalTime = "??:??";
+            if (flight.godzina) {
+                const [h, m] = flight.godzina.split(':');
+                const arrivalH = (parseInt(h) + 2) % 24;
+                arrivalTime = `${arrivalH.toString().padStart(2, '0')}:${m}`;
+            }
+
+            const cardHTML = `
+                <div class="flight-card">
+                    <div class="flight-time">${flight.godzina} - ${arrivalTime}</div>
+                    <div class="flight-route">${cityFrom} - ${cityTo}</div>
+                    <div class="flight-date">${flight.data}</div>
+                    <div class="flight-price">od ${price} zł</div>
+                    <div>
+                        <button class="buy-btn" onclick='goToSeats(${JSON.stringify(flight)})'>
+                            Kup bilet
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML += cardHTML;
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div style="text-align:center; color:red;">Błąd pobierania danych z API.</div>';
+    }
 }
+
+/**
+ * Funkcja do obsługi przycisku "Kup bilet"
+ */
+function goToSeats(flight) {
+    const role = getSessionItem('role');
+
+    if (!role) {
+        alert('Aby kupić bilet musisz się zalogować');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    localStorage.setItem('selectedFlight', JSON.stringify(flight));
+    window.location.href = 'seats.html';
+}
+
 async function apiFetch(endpoint, options = {}) {
-    const role = localStorage.getItem('role');
+    const role = getSessionItem('role');
 
     const headers = {
         'Content-Type': 'application/json',
@@ -95,4 +123,11 @@ async function apiFetch(endpoint, options = {}) {
     }
 
     return response.json();
+}
+
+/**
+ * Pobiera dane z sessionStorage LUB localStorage (priorytet ma sesja aktywna)
+ */
+function getSessionItem(key) {
+    return sessionStorage.getItem(key) || localStorage.getItem(key);
 }

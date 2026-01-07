@@ -1,66 +1,194 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    checkSession(['cashier', 'admin']);
+document.addEventListener('DOMContentLoaded', () => {
+    checkSession(['KASJER', 'MENADZER']);
+    initSell();
+});
 
-    const reservationId = localStorage.getItem('cashierReservationId');
-    if (!reservationId) {
-        alert('Brak rezerwacji');
-        goBack();
+let isProcessing = false;
+
+/* ======================================================
+   INIT
+====================================================== */
+async function initSell() {
+    await loadKlients();
+    await loadLots();
+
+    document
+        .getElementById('lotSelect')
+        .addEventListener('change', loadSeatsForLot);
+}
+
+/* ======================================================
+   DANE PODSTAWOWE
+====================================================== */
+
+async function loadKlients() {
+    const select = document.getElementById('klientSelect');
+    select.innerHTML = `<option value="">⏳ Ładowanie klientów...</option>`;
+
+    try {
+        const klients = await apiFetch('/klienci');
+
+        select.innerHTML = `<option value="">-- wybierz klienta --</option>`;
+        klients.forEach(k => {
+            select.innerHTML += `
+                <option value="${k.id}">
+                    ${k.imie} ${k.nazwisko} (${k.pesel})
+                </option>
+            `;
+        });
+    } catch (e) {
+        console.error(e);
+        select.innerHTML = `<option value="">❌ Błąd ładowania klientów</option>`;
+    }
+}
+
+async function loadLots() {
+    const select = document.getElementById('lotSelect');
+    select.innerHTML = `<option value="">⏳ Ładowanie lotów...</option>`;
+
+    try {
+        const lots = await apiFetch('/loty');
+
+        select.innerHTML = `<option value="">-- wybierz lot --</option>`;
+        lots.forEach(l => {
+            select.innerHTML += `
+                <option value="${l.id}">
+                    ${l.trasa.lotnisko_wylotu.miasto}
+                    →
+                    ${l.trasa.lotnisko_przylotu.miasto}
+                </option>
+            `;
+        });
+    } catch (e) {
+        console.error(e);
+        select.innerHTML = `<option value="">❌ Błąd ładowania lotów</option>`;
+    }
+}
+
+/* ======================================================
+   MIEJSCA – ZALEŻNE OD MODELU I ZAJĘTOŚCI
+====================================================== */
+
+async function loadSeatsForLot() {
+    const lotId = this.value;
+    const select = document.getElementById('miejsceSelect');
+
+    select.disabled = true;
+    select.innerHTML = `<option value="">⏳ Ładowanie miejsc...</option>`;
+
+    if (!lotId) {
+        select.innerHTML = `<option value="">-- wybierz miejsce --</option>`;
         return;
     }
 
     try {
-        const r = await apiFetch(`/rezerwacje/${reservationId}`);
+        const miejsca = await apiFetch(`/loty/${lotId}/miejsca`);
 
-        document.getElementById('sellInfo').innerHTML = `
-            <p><strong>Klient:</strong> ${r.klient.imie} ${r.klient.nazwisko}</p>
-            <p><strong>Miejsce:</strong> ${r.miejsce.numer}</p>
-            <p><strong>Status:</strong> ${r.status}</p>
-        `;
+        if (miejsca.length === 0) {
+            select.innerHTML = `<option value="">❌ Brak dostępnych miejsc</option>`;
+            return;
+        }
 
-        document.getElementById('sellBtn').onclick = async () => {
-            await sell(r);
-        };
+        select.innerHTML = `<option value="">-- wybierz miejsce --</option>`;
+        miejsca.forEach(m => {
+            select.innerHTML += `
+                <option value="${m.id}">
+                    ${m.numer}
+                </option>
+            `;
+        });
 
+        select.disabled = false;
     } catch (e) {
-        alert('Błąd danych rezerwacji');
+        console.error(e);
+        select.innerHTML = `<option value="">❌ Błąd ładowania miejsc</option>`;
     }
-});
+}
 
-async function sell(r) {
+/* ======================================================
+   SPRZEDAŻ = REZERWACJA + BILET + PŁATNOŚĆ
+====================================================== */
+
+async function sellTicket() {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    const klient_id = document.getElementById('klientSelect').value;
+    const lot_id = document.getElementById('lotSelect').value;
+    const miejsce_id = document.getElementById('miejsceSelect').value;
+    const cena = document.getElementById('priceInput').value;
+    const result = document.getElementById('sellResult');
+
+    if (!klient_id || !lot_id || !miejsce_id || !cena || cena <= 0) {
+        result.innerHTML = `
+            <p style="color:red">
+                ❌ Uzupełnij wszystkie pola i podaj poprawną cenę
+            </p>
+        `;
+        isProcessing = false;
+        return;
+    }
+
     try {
-        // 1️⃣ wystaw bilet
-        const bilet = await apiFetch('/bilety', {
+        result.innerHTML = `<p>⏳ Przetwarzanie sprzedaży...</p>`;
+
+        /* 1️⃣ REZERWACJA (<<include>> UML) */
+        const rezerwacja = await apiFetch('/rezerwacje', {
             method: 'POST',
             body: JSON.stringify({
-                imie_pasazera: r.klient.imie,
-                nazwisko_pasazera: r.klient.nazwisko,
-                pesel_pasazera: r.klient.pesel,
-                rezerwacja_id: r.id,
-                lot_id: r.lot_id,
-                miejsce_id: r.miejsce_id
+                klient_id,
+                lot_id,
+                miejsce_id,
+                pracownik_id: getCurrentUserId()
             })
         });
 
-        // 2️⃣ płatność (gotówka)
+        /* 2️⃣ BILET */
+        const bilet = await apiFetch('/bilety', {
+            method: 'POST',
+            body: JSON.stringify({
+                rezerwacja_id: rezerwacja.id,
+                lot_id,
+                miejsce_id
+            })
+        });
+
+        /* 3️⃣ PŁATNOŚĆ */
         await apiFetch('/platnosci', {
             method: 'POST',
             body: JSON.stringify({
-                kwota: 350,
+                kwota: parseInt(cena),
                 metoda: 'GOTOWKA',
-                klient_id: r.klient_id,
+                klient_id,
                 bilet_id: bilet.id
             })
         });
 
-        alert('Bilet sprzedany');
-        window.location.href = 'dashboard.html';
+        result.innerHTML = `
+            <p style="color:green">
+                ✅ Bilet sprzedany poprawnie<br>
+                Numer biletu: <b>${bilet.id}</b>
+            </p>
+        `;
+
+        setTimeout(() => goBack(), 2000);
 
     } catch (e) {
         console.error(e);
-        alert('Błąd sprzedaży');
+        result.innerHTML = `
+            <p style="color:red">
+                ❌ Wystąpił błąd podczas sprzedaży
+            </p>
+        `;
+        isProcessing = false;
     }
 }
+
+/* ======================================================
+   POWRÓT
+====================================================== */
 
 function goBack() {
     window.location.href = 'dashboard.html';
 }
+

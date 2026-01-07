@@ -24,21 +24,28 @@ function goToStats() {
 }
 
 /* ======================================================
-   WYLOGOWANIE
+   WYLOGOWANIE (POPRAWIONE)
 ====================================================== */
 
 function logout() {
+    // 1. Czyścimy oba magazyny
     localStorage.clear();
+    sessionStorage.clear();
 
-    let basePath;
+    // 2. Inteligentne przekierowanie
+    // Sprawdzamy, czy jesteśmy głębiej w strukturze folderów (np. w /client/)
+    const path = window.location.pathname;
 
-    if (location.protocol === 'file:') {
-        // cofamy się do katalogu głównego projektu
-        basePath = location.href.substring(0, location.href.lastIndexOf('/'));
-        basePath = basePath.substring(0, basePath.lastIndexOf('/'));
+    if (path.includes('/client/') || 
+        path.includes('/admin/') || 
+        path.includes('/cashier/')) {
+        
+        // Jeśli jesteśmy w podfolderze, musimy wyjść "w górę"
+        window.location.href = '../index.html';
+        
     } else {
-        basePath = location.origin;
+        // Jeśli jesteśmy w głównym folderze (np. login.html), zostajemy tu
+        window.location.href = 'index.html';
     }
-
-    window.location.href = basePath + '/index.html';
 }
+

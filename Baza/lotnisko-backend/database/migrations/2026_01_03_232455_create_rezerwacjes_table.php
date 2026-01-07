@@ -11,31 +11,42 @@ return new class extends Migration {
         Schema::create('rezerwacjes', function (Blueprint $table) {
             $table->id();
 
-            $table->date('data_rezerwacji')->default(DB::raw('CURRENT_DATE'));
-            $table->string('status', 20)->default('OCZEKUJE');
+            // 📅 data utworzenia rezerwacji (czytelna biznesowo)
+            $table->date('data_rezerwacji')
+                  ->default(DB::raw('CURRENT_DATE'));
 
-            $table->timestamp('wygasa_o')->nullable(); // ⏱ timeout
+            // 📌 status rezerwacji
+            $table->string('status', 20)
+                  ->default('OCZEKUJE');
 
+            // ⏱ czas wygaśnięcia rezerwacji
+            $table->timestamp('wygasa_o')->nullable();
+
+            // 👤 klient
             $table->foreignId('klient_id')
-                ->constrained('klients')
-                ->cascadeOnDelete();
+                  ->constrained('klients')
+                  ->cascadeOnDelete();
 
+            // ✈️ lot
             $table->foreignId('lot_id')
-                ->constrained('lots')
-                ->cascadeOnDelete();
+                  ->constrained('lots')
+                  ->cascadeOnDelete();
 
+            // 💺 miejsce
             $table->foreignId('miejsce_id')
-                ->constrained('miejscas')
-                ->restrictOnDelete();
+                  ->constrained('miejscas')
+                  ->restrictOnDelete();
 
+            // 👨‍💼 pracownik (kasjer / menadżer)
             $table->foreignId('pracownik_id')
-                ->nullable()
-                ->constrained('pracowniks')
-                ->nullOnDelete();
+                  ->nullable()
+                  ->constrained('pracowniks')
+                  ->nullOnDelete();
 
             // 🔒 jedno miejsce tylko raz na dany lot
             $table->unique(['lot_id', 'miejsce_id']);
 
+            // ⏰ created_at / updated_at
             $table->timestamps();
         });
     }

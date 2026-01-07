@@ -3,116 +3,168 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bilet;
+use App\Models\Rezerwacja;
+use App\Models\Platnosc;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class BiletController extends Controller
 {
-    /**
-     * 🔐 AUTORYZACJA RÓL (zamiennik middleware)
-     */
+    /* ======================================================
+       AUTORYZACJA RÓL
+    ====================================================== */
     private function requireRole(Request $request, array $roles): void
     {
-        $role = $request->header('X-User-Role');
+        $role = strtoupper($request->header('X-User-Role'));
 
         if (!$role) {
             abort(401, 'Brak roli użytkownika');
         }
 
-        if (!in_array($role, $roles)) {
+        if (!in_array($role, array_map('strtoupper', $roles))) {
             abort(403, 'Brak uprawnień');
         }
     }
 
-    /**
-     * POST /api/bilety
-     * Tworzenie biletu na podstawie rezerwacji
-     * cashier / admin
-     */
+    /* ======================================================
+       SPRZEDAŻ BILETU
+       POST /api/bilety
+       KASJER / MENADZER / ADMIN
+    ====================================================== */
     public function store(Request $request)
     {
-        $this->requireRole($request, ['cashier', 'admin']);
+        $this->requireRole($request, ['KASJER', 'MENADZER', 'ADMIN']);
 
-        $validated = $request->validate([
-            'imie_pasazera' => 'required|string|max:100',
+        $data = $request->validate([
+            'imie_pasazera'     => 'required|string|max:100',
             'nazwisko_pasazera' => 'required|string|max:100',
-            'pesel_pasazera' => 'required|string|size:11',
-
-            'rezerwacja_id' => 'required|exists:rezerwacjes,id',
-            'lot_id' => 'required|exists:lots,id',
-
-            'miejsce_id' => [
-                'required',
-                'exists:miejscas,id',
-                Rule::unique('bilets')->where(fn ($q) =>
-                    $q->where('lot_id', $request->lot_id)
-                ),
-            ],
+            'pesel_pasazera'    => 'required|string|size:11',
+            'rezerwacja_id'     => 'required|exists:rezerwacjes,id',
+            'lot_id'            => 'required|exists:lots,id',
+            'miejsce_id'        => 'required|exists:miejscas,id',
         ]);
 
-        $validated['numer_biletu'] = strtoupper(Str::random(8));
-        $validated['data_wystawienia'] = now()->toDateString();
-        $validated['status'] = 'NOWY';
+        return DB::transaction(function () use ($data) {
 
-        $bilet = Bilet::create($validated);
+            // blokada rezerwacji
+            $rezerwacja = Rezerwacja::lockForUpdate()
+                ->findOrFail($data['rezerwacja_id']);
 
-        return response()->json($bilet, 201);
+            // spójny status z RezerwacjaController
+            if ($rezerwacja->status !== 'OCZEKUJE') {
+                abort(409, 'Rezerwacja została już obsłużona');
+            }
+
+            // wystawienie biletu
+            $bilet = Bilet::create([
+                'numer_biletu'      => strtoupper(Str::random(8)),
+                'imie_pasazera'     => $data['imie_pasazera'],
+                'nazwisko_pasazera' => $data['nazwisko_pasazera'],
+                'pesel_pasazera'    => $data['pesel_pasazera'],
+                'rezerwacja_id'     => $data['rezerwacja_id'],
+                'lot_id'            => $data['lot_id'],
+                'miejsce_id'        => $data['miejsce_id'],
+                'data_wystawienia'  => now()->toDateString(),
+                'status'            => 'OPLACONY'
+            ]);
+
+            // potwierdzenie rezerwacji
+            $rezerwacja->update([
+                'status' => 'POTWIERDZONA'
+            ]);
+
+            return response()->json($bilet, 201);
+        });
     }
 
-    /**
-     * GET /api/bilety
-     * admin
-     */
+    /* ======================================================
+       ZWROT BILETU
+       POST /api/bilety/zwrot
+       KASJER / MENADZER / ADMIN
+    ====================================================== */
+    public function refund(Request $request)
+    {
+        $this->requireRole($request, ['KASJER', 'MENADZER', 'ADMIN']);
+
+        $data = $request->validate([
+            'numer_biletu' => 'required|string|exists:bilets,numer_biletu',
+        ]);
+
+        return DB::transaction(function () use ($data) {
+
+            $bilet = Bilet::with('rezerwacja')
+                ->lockForUpdate()
+                ->where('numer_biletu', $data['numer_biletu'])
+                ->firstOrFail();
+
+            if ($bilet->status !== 'OPLACONY') {
+                abort(409, 'Tylko opłacony bilet może zostać zwrócony');
+            }
+
+            // zwrot płatności (zostaje tu)
+            Platnosc::create([
+                'kwota'     => -350,
+                'metoda'    => 'GOTOWKA',
+                'status'    => 'ZWROT',
+                'bilet_id'  => $bilet->id,
+                'klient_id' => $bilet->rezerwacja->klient_id
+            ]);
+
+            // statusy
+            $bilet->update(['status' => 'ZWRÓCONY']);
+            $bilet->rezerwacja->update(['status' => 'ANULOWANA']);
+
+            return response()->json([
+                'message' => 'Zwrot biletu wykonany poprawnie',
+                'numer_biletu' => $bilet->numer_biletu
+            ]);
+        });
+    }
+
+    /* ======================================================
+       LISTA BILETÓW – ADMIN
+    ====================================================== */
     public function index(Request $request)
     {
-        $this->requireRole($request, ['admin']);
-
+        $this->requireRole($request, ['ADMIN']);
         return Bilet::all();
     }
 
-    /**
-     * ✅ E – MOJE BILETY
-     * GET /api/moje-bilety/{klient_id}
-     * client
-     */
+    /* ======================================================
+       MOJE BILETY – CLIENT
+    ====================================================== */
     public function mojeBilety(Request $request, $klient_id)
     {
-        $this->requireRole($request, ['client']);
+        $this->requireRole($request, ['CLIENT']);
 
-        $bilety = Bilet::with([
-                'rezerwacja.lot.trasa.lotniskoWylotu',
-                'rezerwacja.lot.trasa.lotniskoPrzylotu',
-                'miejsce'
-            ])
-            ->whereHas('rezerwacja', function ($q) use ($klient_id) {
-                $q->where('klient_id', $klient_id);
-            })
-            ->orderByDesc('data_wystawienia')
-            ->get();
-
-        return response()->json($bilety);
+        return Bilet::with([
+            'rezerwacja.lot.trasa.lotniskoWylotu',
+            'rezerwacja.lot.trasa.lotniskoPrzylotu',
+            'miejsce'
+        ])
+        ->whereHas('rezerwacja', fn ($q) =>
+            $q->where('klient_id', $klient_id)
+        )
+        ->orderByDesc('data_wystawienia')
+        ->get();
     }
 
-    /**
-     * F – bilety opłacone (do zwrotu / obsługi)
-     * GET /api/pracownik/bilety-oplacone
-     * cashier / admin
-     */
+    /* ======================================================
+       BILETY OPŁACONE – KASJER
+    ====================================================== */
     public function pracownikBiletyOplacone(Request $request)
     {
-        $this->requireRole($request, ['cashier', 'admin']);
+        $this->requireRole($request, ['KASJER', 'MENADZER', 'ADMIN']);
 
-        $bilety = Bilet::with([
-                'rezerwacja.klient',
-                'miejsce',
-                'rezerwacja.lot.trasa.lotniskoWylotu',
-                'rezerwacja.lot.trasa.lotniskoPrzylotu'
-            ])
-            ->where('status', 'OPLACONY')
-            ->orderByDesc('data_wystawienia')
-            ->get();
-
-        return response()->json($bilety);
+        return Bilet::with([
+            'rezerwacja.klient',
+            'miejsce',
+            'rezerwacja.lot.trasa.lotniskoWylotu',
+            'rezerwacja.lot.trasa.lotniskoPrzylotu'
+        ])
+        ->where('status', 'OPLACONY')
+        ->orderByDesc('data_wystawienia')
+        ->get();
     }
 }

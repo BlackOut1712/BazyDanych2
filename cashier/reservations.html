@@ -5,7 +5,7 @@
     <title>Rezerwacje klientów</title>
     <link rel="stylesheet" href="../css/style.css">
 
-    <!-- 🔐 SESJA – MUSI BYĆ WCZYTANA WCZEŚNIEJ -->
+    <!-- 🔐 SESJA -->
     <script src="../js/session.js"></script>
     <script>
         checkSession(['KASJER']);
@@ -27,22 +27,25 @@
     <section class="card">
         <h2>Rezerwacje klientów</h2>
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Klient</th>
-                    <th>Lot</th>
-                    <th>Miejsce</th>
-                    <th>Status</th>
-                    <th>Akcja</th>
-                </tr>
-            </thead>
-            <tbody id="reservationsBody">
-                <tr>
-                    <td colspan="5">Ładowanie...</td>
-                </tr>
-            </tbody>
-        </table>
+        <table class="styled-table">
+			<thead>
+				<tr>
+					<th>Klient</th>
+					<th>Lot</th>
+					<th>Miejsce</th>
+					<th>Status</th>
+					<th>Akcja</th>
+				</tr>
+			</thead>
+			<tbody id="reservationsBody">
+				<tr>
+					<td colspan="5" class="table-loading">
+						⏳ Ładowanie rezerwacji...
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
 
         <div class="actions">
             <button class="btn-secondary" onclick="goBack()">
@@ -54,12 +57,9 @@
 </main>
 
 <!-- LOGIKA -->
-<script src="../js/session.js"></script>
-<script src="../js/cashier.js"></script>
+<script src="../js/app.js"></script>
+<script src="../js/cashier-reservations.js"></script>
 
-<script>
-    checkSession(['KASJER']);
-</script>
 <script>
     function goBack() {
         window.location.href = 'dashboard.html';
