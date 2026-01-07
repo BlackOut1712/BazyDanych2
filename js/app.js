@@ -104,8 +104,11 @@ async function apiFetch(endpoint, options = {}) {
     };
 
     if (role) {
-        headers['X-User-Role'] = role;
+        headers['X-User-Role'] = role.toLowerCase();
     }
+
+    //LOG
+    console.log("Wysyłam nagłówki:", headers);
 
     const response = await fetch(API_URL + endpoint, {
         ...options,
