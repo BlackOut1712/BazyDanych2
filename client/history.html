@@ -3,35 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Historia zamówień</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-	<script src="../js/session.js"></script>
-	<script>
-		checkSession('client');
-	</script>
 </head>
 <body>
 
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo"><a href="index.html">Lotnisko</a></div>
+    <div class="user-actions">
+        <i class="fa-solid fa-bell"></i>
+        <i class="fa-solid fa-user"></i></a>
+        <i class="fa-solid fa-ellipsis"></i>
+    </div>
 </header>
 
 <main class="container">
-    <h3>Historia zamówień</h3>
+    
+    <div class="page-title-card">
+        Historia zamówień
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Trasa</th>
-                <th>Data</th>
-                <th>Miejsce</th>
-                <th>Status</th>
-                <th>Cena</th>
-            </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-    </table>
+    <div class="tickets-header tickets-grid-layout">
+        <div>ID biletu</div>
+        <div>Trasa</div>
+        <div>Data i czas</div>
+        <div>Status</div>
+        <div></div> </div>
+
+    <div id="tickets-container">
+        <div style="text-align: center; padding: 20px;">Ładowanie biletów...</div>
+    </div>
+
 </main>
 
+<!-- JS Z WSPÓLNEGO FOLDERU -->
+<script src="../js/session.js"></script>
+<script src="../js/app.js"></script>
 <script src="../js/tickets.js"></script>
 </body>
 </html>

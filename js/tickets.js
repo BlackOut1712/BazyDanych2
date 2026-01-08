@@ -1,47 +1,179 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    checkSession(['client']);
+    // 1. Sprawdzenie sesji i pobranie ID
+    const user = getUser(); 
+    console.log(JSON.stringify(user));
+    if (!user) {
+        alert("Sesja wygasła. Zaloguj się ponownie.");
+        window.location.href = '../login.html';
+        return;
+    }
 
-    const user = JSON.parse(localStorage.getItem('user'));
-    const body = document.getElementById('ticketsBody');
-    body.innerHTML = '';
+    // Obsługa różnych nazw ID (zależnie od tego co zwraca baza)
+    const userId = user.KlientID || user.id; 
+
+    // Kontener na bilety
+    const container = document.getElementById('tickets-container');
+    container.innerHTML = '<div style="text-align:center; padding:20px;">Pobieranie biletów...</div>';
 
     try {
-        const bilety = await apiFetch(`/moje-bilety/${user.id}`);
+        // 1. Pobieramy WSZYSTKIE bilety
+        const data = await apiFetch(`/moje-bilety/${userId}`);
+        container.innerHTML='';
 
-        if (!bilety.length) {
-            body.innerHTML = `
-                <tr>
-                    <td colspan="6">Nie masz jeszcze żadnych biletów</td>
-                </tr>
-            `;
-            return;
+        // 2. Sprawdzamy, jaki tytuł ma strona (lub ID kontenera), żeby wiedzieć co pokazać
+        // Załóżmy, że w HTML "Historii" dodasz id="history-mode" do main lub body, 
+        // albo po prostu sprawdzisz tytuł nagłówka.
+        const isHistoryPage = document.querySelector('.page-title-card').innerText.includes('Historia');
+
+        let biletyDoWyswietlenia = [];
+
+        if (isHistoryPage) {
+            // --- TRYB HISTORII ---
+            // Pokazujemy: Anulowane, Użyte, Zakończone
+            const statusyHistoryczne = ['Anulowany', 'Użyty', 'Zakończony', 'Zwrot'];
+            biletyDoWyswietlenia = data.filter(b => statusyHistoryczne.includes(b.status));     //!!!!!!!!!! BILETY Z TYM STATUSEM SA W HISTORII
+        } else {
+            // --- TRYB MOJE BILETY (DOMYŚLNY) ---
+            // Pokazujemy: Opłacony, Nowy, Oczekujący
+            const statusyAktywne = ['Opłacony', 'Potwierdzony', 'Nowy', 'aktywny'];         //!!!!!! WAZNE - BILETY Z TYM STATUSEM SA W MOJE-BILETY
+            biletyDoWyswietlenia = data.filter(b => statusyAktywne.includes(b.status));
         }
 
-        bilety.forEach(b => {
-            const tr = document.createElement('tr');
+        // 3. Obsługa pustej listy
+        if (!biletyDoWyswietlenia.length) {
+            container.innerHTML = '<div style="text-align:center; padding:30px;">Brak biletów w tej kategorii.</div>';
+            return;
+        }
+        // 3. Generowanie kafelków
+        biletyDoWyswietlenia.forEach(b => {
+            // Wyciąganie danych
+            const lot = b.rezerwacja?.lot || {};
+            const trasa = lot.trasa || {};
+            
+            const wylot = trasa.lotnisko_wylotu?.miasto || 'Nieznane';
+            const przylot = trasa.lotnisko_przylotu?.miasto || 'Nieznane';
+            const dataLotu = lot.data || '-';   // Oczekujemy formatu YYYY-MM-DD
+            const godzina = lot.godzina || '-'; // Oczekujemy formatu HH:MM
+            
+            // Konwersja czasu lotu na liczbę (zabezpieczenie)
+            // Upewnij się, że w bazie pole nazywa się 'czas_lotu' lub 'czas_przelotu'
+            const czasLotu = Number(trasa.czas_lotu) || Number(trasa.czas_przelotu) || 0;
+            
+            // Domyślne wartości
+            let godzinaPrzylotu = "??:??";
+            let dataPrzylotu = ""; // Pusty string na start
 
-            tr.innerHTML = `
-                <td>${b.numer_biletu}</td>
-                <td>
-                    ${b.rezerwacja.lot.trasa.lotnisko_wylotu.miasto}
-                    →
-                    ${b.rezerwacja.lot.trasa.lotnisko_przylotu.miasto}
-                </td>
-                <td>${b.rezerwacja.lot.data}</td>
-                <td>${b.rezerwacja.lot.godzina}</td>
-                <td>${b.miejsce.numer}</td>
-                <td>${b.status}</td>
+            // --- DIAGNOSTYKA (Podgląd w konsoli F12) ---
+            console.log(`Bilet ${b.numer_biletu}: Data=${dataLotu}, Godz=${godzina}, Czas=${czasLotu}`);
+
+            // Logika obliczania
+            if (dataLotu && godzina && czasLotu > 0) {
+                try {
+                    // Tworzymy datę startową
+                    // dataLotu musi być: "2025-12-21", godzina: "12:30"
+                    const start = new Date(`${dataLotu}T${godzina}`);
+                    
+                    // Dodajemy minuty (czasLotu * 60000 ms)
+                    const koniec = new Date(start.getTime() + czasLotu * 60000);
+
+                    if (!isNaN(koniec.getTime())) {
+                        // Formatowanie godziny (HH:MM)
+                        const g = String(koniec.getHours()).padStart(2, '0');
+                        const m = String(koniec.getMinutes()).padStart(2, '0');
+                        godzinaPrzylotu = `${g}:${m}`;
+
+                        // Formatowanie daty przylotu (DD.MM.YYYY)
+                        const dzien = String(koniec.getDate()).padStart(2, '0');
+                        const miesiac = String(koniec.getMonth() + 1).padStart(2, '0');
+                        const rok = koniec.getFullYear();
+                        
+                        // Zapisujemy datę do zmiennej używanej w HTML
+                        dataPrzylotu = `${rok}-${miesiac}-${dzien}`;
+
+                        // Opcjonalnie: dodaj info jeśli to kolejny dzień
+                        if (koniec.getDate() !== start.getDate()) {
+                            dataPrzylotu += ' <span style="font-size:0.8em; color:#666">(+1 dzień)</span>';
+                        }
+                    }
+                } catch (err) {
+                    console.error("Błąd obliczania daty:", err);
+                }
+            }
+
+            const numerBiletu = b.numer_biletu || 'REF-???';
+            const status = b.status || '???';
+            const miejsce = b.miejsce?.numer || '???';
+            const klasa = b.miejsce?.klasa || '???';
+            const pasazerImie = user.imie || '???'; // Upewnij się czy user.Imie czy user.imie (wielkość liter!)
+            const pasazerNazwisko = user.nazwisko || '???';
+
+            // --- TWORZENIE ELEMENTÓW DOM ---
+            const ticketRow = document.createElement('div');
+            ticketRow.className = 'ticket-row tickets-grid-layout';
+            
+            ticketRow.innerHTML = `
+                <div>${numerBiletu}</div>
+                <div>${wylot} - ${przylot}</div>
+                <div>${godzina} &nbsp; ${dataLotu}</div>
+                <div>${status}</div>
+                <button class="btn-details">Szczegóły</button>
             `;
 
-            body.appendChild(tr);
+            const detailsPanel = document.createElement('div');
+            detailsPanel.className = 'ticket-details-panel';
+            detailsPanel.style.display = 'none';
+
+            // UWAGA: Poprawiłem zmienną user.imie na pasazerImie w HTML poniżej
+            detailsPanel.innerHTML = `
+                <div class="details-column">
+                    <div><strong>Imię pasażera:</strong> ${pasazerImie}</div>
+                    <div><strong>Nazwisko pasażera:</strong> ${pasazerNazwisko}</div>
+                </div>
+                
+                <div class="details-column">
+                    <div><strong>ID biletu:</strong> ${numerBiletu}</div>
+                    <div><strong>Status:</strong> ${status}</div>
+                </div>
+
+                <div class="details-column">
+                    <div><strong>Godzina wylotu:</strong> ${godzina} ${dataLotu}</div>
+                    <div><strong>Godzina przylotu:</strong> ${godzinaPrzylotu} ${dataPrzylotu}</div>
+                </div>
+
+                <div class="details-column">
+                    <div><strong>Klasa:</strong> ${klasa}</div>
+                    <div><strong>Miejsce:</strong> ${miejsce}</div>
+                </div>
+
+                <div class="actions-column">
+                    <button class="btn-action-white" onclick="alert('Zmiana miejsca')">Zmień miejsce</button>
+                    <button class="btn-action-white" onclick="alert('Rezygnacja')">Zrezygnuj</button>
+                    <button class="btn-action-white" onclick="alert('Faktura')">Drukuj fakturę</button>
+                </div>
+            `;
+            
+            // ... reszta kodu obsługi przycisku (bez zmian) ...
+            const btnDetails = ticketRow.querySelector('.btn-details');
+            btnDetails.addEventListener('click', () => {
+                const isHidden = detailsPanel.style.display === 'none';
+                if (isHidden) {
+                    detailsPanel.style.display = 'flex';
+                    ticketRow.classList.add('expanded');
+                    btnDetails.textContent = 'Zwiń';
+                } else {
+                    detailsPanel.style.display = 'none';
+                    ticketRow.classList.remove('expanded');
+                    btnDetails.textContent = 'Szczegóły';
+                }
+            });
+
+            container.appendChild(ticketRow);
+            container.appendChild(detailsPanel);
         });
 
     } catch (e) {
         console.error(e);
-        body.innerHTML = `
-            <tr>
-                <td colspan="6">Błąd pobierania biletów</td>
-            </tr>
-        `;
+        container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Błąd pobierania biletów z serwera.</div>';
     }
 });
+

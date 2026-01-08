@@ -3,40 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Moje bilety</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
-    <div class="actions">
-        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    <div class="logo"><a href="index.html">Lotnisko</a></div>
+    <div class="user-actions">
+        <i class="fa-solid fa-bell"></i>
+        <i class="fa-solid fa-user"></i></a>
+        <i class="fa-solid fa-ellipsis"></i>
     </div>
 </header>
 
 <main class="container">
+    
+    <div class="page-title-card">
+        Moje bilety
+    </div>
 
-    <section class="card">
-        <h2>Moje bilety</h2>
+    <div class="tickets-header tickets-grid-layout">
+        <div>ID biletu</div>
+        <div>Trasa</div>
+        <div>Data i czas</div>
+        <div>Status</div>
+        <div></div> </div>
 
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>Numer biletu</th>
-                    <th>Trasa</th>
-                    <th>Data</th>
-                    <th>Godzina</th>
-                    <th>Miejsce</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="ticketsBody">
-                <tr>
-                    <td colspan="6">Ładowanie...</td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
+    <div id="tickets-container">
+        <div style="text-align: center; padding: 20px;">Ładowanie biletów...</div>
+    </div>
 
 </main>
 
