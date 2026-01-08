@@ -71,13 +71,13 @@ async function savePlane() {
 
     try {
         if (id) {
-            // ✏️ EDYCJA
+            // EDYCJA
             await apiFetch(`/samoloty/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify(payload)
             });
         } else {
-            // ➕ DODAWANIE
+            // DODAWANIE
             await apiFetch('/samoloty', {
                 method: 'POST',
                 body: JSON.stringify(payload)

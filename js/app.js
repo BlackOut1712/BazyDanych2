@@ -4,7 +4,6 @@ const API_URL = 'http://127.0.0.1:8000/api';
  * Klikane przyciskiem "Szukaj" - Wersja KAFELKOWA
  */
 async function searchFlights() {
-    // 1. Szukamy kontenera o nowym ID
     const container = document.getElementById('flights-container');
     
     if (!container) {
@@ -20,7 +19,6 @@ async function searchFlights() {
     const toInput = document.getElementById('to')?.value.toLowerCase() || '';
 
     try {
-        // Używamy apiFetch zdefiniowanego na dole tego pliku
         const flights = await apiFetch('/loty');
 
         const filtered = flights.filter(flight => {
@@ -42,13 +40,12 @@ async function searchFlights() {
             return;
         }
 
-        // 2. Generowanie KAFELKÓW (z klasą flight-card)
+        // Generowanie KAFELKÓW
         filtered.forEach(flight => {
             const cityFrom = flight.trasa?.lotnisko_wylotu?.miasto || 'Nieznane';
             const cityTo = flight.trasa?.lotnisko_przylotu?.miasto || 'Nieznane';
             const price = flight.cena || 350; 
             
-            // Symulacja godziny przylotu
             let arrivalTime = "??:??";
             if (flight.godzina) {
                 const [h, m] = flight.godzina.split(':');

@@ -23,20 +23,14 @@ function isValidPassword(value) {
 
 
 function startSession(role, user, remember) {
-    // 1. Wybierz odpowiedni magazyn danych
-    // Jeśli "remember" jest true -> localStorage (trwałe)
-    // Jeśli "remember" jest false -> sessionStorage (tymczasowe)
     const storage = remember ? localStorage : sessionStorage;
     
-    // 2. Magazyn "do wyczyszczenia" (ten drugi)
-    // Ważne: Jeśli użytkownik wcześniej zaznaczył "zapamiętaj", a teraz loguje się bez tego,
-    // musimy usunąć stare dane z localStorage, żeby nie powodowały konfliktów.
+    //Magazyn "do wyczyszczenia"
     const obsoleteStorage = remember ? sessionStorage : localStorage;
     
     // Czyścimy stary magazyn z kluczowych danych
     ['role', 'user', 'lastActivity', 'remember'].forEach(key => obsoleteStorage.removeItem(key));
 
-    // 3. Zapisz nowe dane w wybranym magazynie
     storage.setItem('role', role);
     storage.setItem('user', JSON.stringify(user));
     storage.setItem('lastActivity', Date.now().toString());
@@ -60,7 +54,7 @@ async function login() {
         return;
     }
 
-    // 🔍 WALIDACJA FRONTEND
+    // WALIDACJA FRONTEND
     if (isValidEmail(identifier)) {
         // klient
         if (secret.length < 6) {
@@ -105,10 +99,10 @@ async function login() {
         const role = data.role.toUpperCase();
 		const user = data.user;
 
-		// 💾 START SESJI
+		// START SESJI
 		startSession(role, user, remember);
         console.log(role)
-		// 🔀 PRZEKIEROWANIA
+		// PRZEKIEROWANIA
 		switch (role) {
 
 			case 'CLIENT':

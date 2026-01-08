@@ -47,7 +47,6 @@ class SamolotController extends Controller
             'status' => 'sometimes',
         ]);
 
-        // 👇 JAWNA KONWERSJA STATUSU
         if (array_key_exists('status', $data)) {
             $data['status'] = filter_var($data['status'], FILTER_VALIDATE_BOOLEAN);
         }

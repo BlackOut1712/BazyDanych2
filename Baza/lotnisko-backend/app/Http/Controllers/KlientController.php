@@ -27,7 +27,6 @@ class KlientController extends Controller
             'haslo' => 'required|string|min:6'
         ]);
 
-        // 🔐 HASH PINU / HASŁA
         $validated['haslo'] = Hash::make($validated['haslo']);
 
         $klient = Klient::create($validated);

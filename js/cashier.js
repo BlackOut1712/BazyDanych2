@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // 🔐 Dostęp: KASJER + MENADZER
+    // Dostęp: KASJER + MENADZER
     checkSession(['KASJER', 'MENADZER']);
 
     const body = document.getElementById('reservationsBody');
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * 👉 Przejście do sprzedaży biletu
+ * Przejście do sprzedaży biletu
  */
 function sellTicket(reservationId) {
     localStorage.setItem('cashierReservationId', reservationId);

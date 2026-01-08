@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Hash;
 
 class PlatnoscController extends Controller
 {
-    /**
-     * 🔐 AUTORYZACJA RÓL
-     */
+    //Autoryzacja ról
     private function requireRole(Request $request, array $roles): void
     {
         $role = strtoupper($request->header('X-User-Role'));
@@ -29,9 +27,7 @@ class PlatnoscController extends Controller
         }
     }
 
-    /**
-     * 🔁 WYGASZANIE REZERWACJI
-     */
+    //wygaszanie rezertwacji
     private function wygasRezerwacje(): void
     {
         Rezerwacja::where('status', 'OCZEKUJE')
@@ -43,8 +39,7 @@ class PlatnoscController extends Controller
             ]);
     }
 
-    /**
-     * 💳 POST /api/platnosci
+    /** POST /api/platnosci
      * CLIENT / KASJER / MENADZER / ADMIN
      */
     public function store(Request $request)
@@ -65,7 +60,6 @@ class PlatnoscController extends Controller
             $bilet = Bilet::lockForUpdate()->findOrFail($validated['bilet_id']);
             $rezerwacja = Rezerwacja::lockForUpdate()->findOrFail($bilet->rezerwacja_id);
 
-            // ✅ POPRAWKA: po wystawieniu biletu rezerwacja jest POTWIERDZONA
             if (!in_array($rezerwacja->status, ['OCZEKUJE', 'POTWIERDZONA'])) {
                 throw ValidationException::withMessages([
                     'rezerwacja' => 'Rezerwacja nie jest aktywna',
@@ -100,8 +94,7 @@ class PlatnoscController extends Controller
         });
     }
 
-    /**
-     * 🔄 POST /api/bilety/zwrot
+    /** POST /api/bilety/zwrot
      * KASJER / MENADZER / ADMIN
      */
     public function zwrot(Request $request)
@@ -148,9 +141,7 @@ class PlatnoscController extends Controller
         });
     }
 
-    /**
-     * 📋 LISTA PŁATNOŚCI
-     */
+    //Lista Platnosci
     public function index()
     {
         return response()->json(

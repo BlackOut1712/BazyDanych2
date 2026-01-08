@@ -56,7 +56,7 @@ async function loadWorkers() {
 }
 
 /* ======================================================
-   BLOKADA / ODBLOKOWANIE (JEDYNE MIEJSCE ZMIANY STATUSU)
+   BLOKADA / ODBLOKOWANIE
 ====================================================== */
 
 async function toggleWorker(id) {
@@ -97,7 +97,6 @@ async function editWorker(id) {
         rola.value = w.rola;
         haslo.value = '';
 
-        // 🔒 PESEL tylko do podglądu
         pesel.disabled = true;
 
         let idField = document.getElementById('workerId');
@@ -141,13 +140,13 @@ async function saveWorker() {
 
     try {
         if (id) {
-            // ✏️ EDYCJA
+            // EDYCJA
             await apiFetch(`/pracownicy/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify(data)
             });
         } else {
-            // ➕ DODAWANIE (zawsze aktywny)
+            // DODAWANIE (zawsze aktywny)
             if (!data.haslo) {
                 alert('Hasło jest wymagane przy dodawaniu pracownika');
                 return;

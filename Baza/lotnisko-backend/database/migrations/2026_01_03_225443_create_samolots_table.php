@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('model', 100);
             $table->integer('liczba_miejsc');
 
-            // 🔒 STATUS SAMOLOTU
+            // STATUS SAMOLOTU
             // true  = AKTYWNY
             // false = NIEAKTYWNY
             $table->boolean('status')->default(true);

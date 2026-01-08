@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 🔐 dostęp tylko dla MENADŻERA
+    //dostęp tylko dla MENADŻERA
     checkSession(['MENADZER']);
 });
 
@@ -28,23 +28,21 @@ function goToStats() {
 ====================================================== */
 
 function logout() {
-    // 1. Czyścimy oba magazyny
+    //Czyścimy oba magazyny
     localStorage.clear();
     sessionStorage.clear();
 
-    // 2. Inteligentne przekierowanie
-    // Sprawdzamy, czy jesteśmy głębiej w strukturze folderów (np. w /client/)
     const path = window.location.pathname;
 
     if (path.includes('/client/') || 
         path.includes('/admin/') || 
         path.includes('/cashier/')) {
         
-        // Jeśli jesteśmy w podfolderze, musimy wyjść "w górę"
+        // Jeśli jesteśmy w podfolderze, musimy wyjść
         window.location.href = '../index.html';
         
     } else {
-        // Jeśli jesteśmy w głównym folderze (np. login.html), zostajemy tu
+        // Jeśli jesteśmy w głównym folderze
         window.location.href = 'index.html';
     }
 }

@@ -128,7 +128,7 @@ async function createFullFlight() {
     }
 
     try {
-        // 1️⃣ lotniska
+        // lotniska
         const fromAirport = await getOrCreateAirport(fromCity, fromCountry);
         const toAirport = await getOrCreateAirport(toCity, toCountry);
 
@@ -137,7 +137,7 @@ async function createFullFlight() {
             return;
         }
 
-        // 2️⃣ trasa
+        // trasa
         const route = await apiFetch('/trasy', {
             method: 'POST',
             body: JSON.stringify({
@@ -147,7 +147,7 @@ async function createFullFlight() {
             })
         });
 
-        // 3️⃣ lot
+        // lot
         await apiFetch('/loty', {
             method: 'POST',
             body: JSON.stringify({

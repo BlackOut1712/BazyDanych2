@@ -19,9 +19,7 @@ class AuthController extends Controller
         $identifier = $request->identifier;
         $secret = $request->secret;
 
-        // =========================
-        // 👉 KLIENT (EMAIL + HASŁO)
-        // =========================
+        // Klient - EMAIL I PIN
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
 
             $klient = Klient::where('email', $identifier)->first();
@@ -33,24 +31,20 @@ class AuthController extends Controller
             }
 
             return response()->json([
-                'role' => 'CLIENT', // 🔧 ujednolicone pod frontend
+                'role' => 'CLIENT', 
                 'user' => $klient,
             ]);
         }
 
-        // =========================
-        // 👉 PRACOWNIK (LOGIN + HASŁO)
-        // =========================
+        // PRACOWNIK - LOGIN I HASLO
         $pracownik = Pracownik::where('login', $identifier)->first();
 
-        // ❌ brak użytkownika lub złe hasło
         if (!$pracownik || !Hash::check($secret, $pracownik->haslo)) {
             return response()->json([
                 'message' => 'Niepoprawny login lub hasło'
             ], 401);
         }
 
-        // 🔒 BLOKADA KONTA (TO BYŁO BRAKUJĄCE!)
         if ((int) $pracownik->status !== 1) {
             return response()->json([
                 'message' => 'Konto pracownika jest zablokowane'

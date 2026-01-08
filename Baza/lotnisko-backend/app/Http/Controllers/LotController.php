@@ -75,11 +75,7 @@ class LotController extends Controller
         ]);
     }
 
-    /* ======================================================
-       ✅ NOWA METODA – BEZPIECZNE ROZSZERZENIE
-       GET /api/loty/{id}/miejsca
-       (zgodna z frontendem i UML)
-    ====================================================== */
+    /* GET /api/loty/{id}/miejsca */
     public function dostepneMiejsca($id)
     {
         $lot = Lot::with('samolot')->findOrFail($id);

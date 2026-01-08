@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 class PracownikController extends Controller
 {
     /* ======================================================
-       AUTORYZACJA RÓL (zamiennik middleware)
+       AUTORYZACJA RÓL
     ====================================================== */
     private function requireRole(Request $request, array $roles): void
     {
@@ -30,7 +30,6 @@ class PracownikController extends Controller
 
     /* ======================================================
        LISTA PRACOWNIKÓW
-       👑 tylko MENADŻER
     ====================================================== */
     public function index(Request $request)
     {
@@ -43,7 +42,6 @@ class PracownikController extends Controller
 
     /* ======================================================
        DODAWANIE PRACOWNIKA
-       👑 tylko MENADŻER
        (status domyślnie = AKTYWNY)
     ====================================================== */
     public function store(Request $request)
@@ -65,7 +63,7 @@ class PracownikController extends Controller
         ]);
 
         $data['haslo'] = Hash::make($data['haslo']);
-        $data['status'] = true; // 🔒 ZAWSZE AKTYWNY NA START
+        $data['status'] = true;
         $data['data_zatrudnienia'] = now()->toDateString();
 
         $pracownik = Pracownik::create($data);
@@ -75,8 +73,6 @@ class PracownikController extends Controller
 
     /* ======================================================
        EDYCJA PRACOWNIKA
-       👑 tylko MENADŻER
-       (PESEL NIEEDYTOWALNY)
     ====================================================== */
     public function update(Request $request, $id)
     {
@@ -113,8 +109,6 @@ class PracownikController extends Controller
 
     /* ======================================================
        BLOKADA / ODBLOKOWANIE KONTA
-       👑 tylko MENADŻER
-       (JEDYNY SPOSÓB ZMIANY STATUSU)
     ====================================================== */
     public function toggleStatus(Request $request, $id)
     {

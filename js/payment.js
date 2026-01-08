@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const method = document.querySelector('input[name="method"]:checked').value;
 
         try {
-            // 🔴 UWAGA: zakładamy, że bilet już istnieje
+            //zakładamy, że bilet już istnieje
             const bilet = await apiFetch(`/bilety?rezerwacja_id=${reservation.id}`);
 
             if (!bilet.length) {

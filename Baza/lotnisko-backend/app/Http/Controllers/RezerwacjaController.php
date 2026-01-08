@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 class RezerwacjaController extends Controller
 {
     /* ======================================================
-       🔐 AUTORYZACJA RÓL (UODPORNIENIE NA RÓŻNE HEADERY)
+       AUTORYZACJA RÓL
     ====================================================== */
     private function requireRole(Request $request, array $roles): void
     {
@@ -29,7 +29,7 @@ class RezerwacjaController extends Controller
     }
 
     /* ======================================================
-       🔁 WYGASZANIE REZERWACJI
+       WYGASZANIE REZERWACJI
     ====================================================== */
     private function wygasRezerwacje(): void
     {
@@ -59,7 +59,6 @@ class RezerwacjaController extends Controller
 
     /* ======================================================
        GET /api/rezerwacje/{id}
-       ⬅️ KLUCZOWE DLA sell.html
     ====================================================== */
     public function show(Request $request, $id)
     {
@@ -153,7 +152,7 @@ class RezerwacjaController extends Controller
     }
 
     /* ======================================================
-       👨‍💼 REZERWACJE DLA KASJERA
+       REZERWACJE DLA KASJERA
        GET /api/pracownik/rezerwacje
     ====================================================== */
     public function pracownikRezerwacje(Request $request)

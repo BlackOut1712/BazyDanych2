@@ -23,7 +23,7 @@ async function initSell() {
 
 async function loadKlients() {
     const select = document.getElementById('klientSelect');
-    select.innerHTML = `<option value="">⏳ Ładowanie klientów...</option>`;
+    select.innerHTML = `<option value="">Ładowanie klientów...</option>`;
 
     try {
         const klients = await apiFetch('/klienci');
@@ -38,13 +38,13 @@ async function loadKlients() {
         });
     } catch (e) {
         console.error(e);
-        select.innerHTML = `<option value="">❌ Błąd ładowania klientów</option>`;
+        select.innerHTML = `<option value="">Błąd ładowania klientów</option>`;
     }
 }
 
 async function loadLots() {
     const select = document.getElementById('lotSelect');
-    select.innerHTML = `<option value="">⏳ Ładowanie lotów...</option>`;
+    select.innerHTML = `<option value="">Ładowanie lotów...</option>`;
 
     try {
         const lots = await apiFetch('/loty');
@@ -61,7 +61,7 @@ async function loadLots() {
         });
     } catch (e) {
         console.error(e);
-        select.innerHTML = `<option value="">❌ Błąd ładowania lotów</option>`;
+        select.innerHTML = `<option value="">Błąd ładowania lotów</option>`;
     }
 }
 
@@ -74,7 +74,7 @@ async function loadSeatsForLot() {
     const select = document.getElementById('miejsceSelect');
 
     select.disabled = true;
-    select.innerHTML = `<option value="">⏳ Ładowanie miejsc...</option>`;
+    select.innerHTML = `<option value="">Ładowanie miejsc...</option>`;
 
     if (!lotId) {
         select.innerHTML = `<option value="">-- wybierz miejsce --</option>`;
@@ -85,7 +85,7 @@ async function loadSeatsForLot() {
         const miejsca = await apiFetch(`/loty/${lotId}/miejsca`);
 
         if (miejsca.length === 0) {
-            select.innerHTML = `<option value="">❌ Brak dostępnych miejsc</option>`;
+            select.innerHTML = `<option value="">Brak dostępnych miejsc</option>`;
             return;
         }
 
@@ -101,7 +101,7 @@ async function loadSeatsForLot() {
         select.disabled = false;
     } catch (e) {
         console.error(e);
-        select.innerHTML = `<option value="">❌ Błąd ładowania miejsc</option>`;
+        select.innerHTML = `<option value="">Błąd ładowania miejsc</option>`;
     }
 }
 
@@ -122,7 +122,7 @@ async function sellTicket() {
     if (!klient_id || !lot_id || !miejsce_id || !cena || cena <= 0) {
         result.innerHTML = `
             <p style="color:red">
-                ❌ Uzupełnij wszystkie pola i podaj poprawną cenę
+                Uzupełnij wszystkie pola i podaj poprawną cenę
             </p>
         `;
         isProcessing = false;
@@ -132,7 +132,7 @@ async function sellTicket() {
     try {
         result.innerHTML = `<p>⏳ Przetwarzanie sprzedaży...</p>`;
 
-        /* 1️⃣ REZERWACJA (<<include>> UML) */
+        /* REZERWACJA */
         const rezerwacja = await apiFetch('/rezerwacje', {
             method: 'POST',
             body: JSON.stringify({
@@ -143,7 +143,7 @@ async function sellTicket() {
             })
         });
 
-        /* 2️⃣ BILET */
+        /* BILET */
         const bilet = await apiFetch('/bilety', {
             method: 'POST',
             body: JSON.stringify({
@@ -153,7 +153,7 @@ async function sellTicket() {
             })
         });
 
-        /* 3️⃣ PŁATNOŚĆ */
+        /* PŁATNOŚĆ */
         await apiFetch('/platnosci', {
             method: 'POST',
             body: JSON.stringify({
@@ -166,7 +166,7 @@ async function sellTicket() {
 
         result.innerHTML = `
             <p style="color:green">
-                ✅ Bilet sprzedany poprawnie<br>
+                Bilet sprzedany poprawnie<br>
                 Numer biletu: <b>${bilet.id}</b>
             </p>
         `;
@@ -177,7 +177,7 @@ async function sellTicket() {
         console.error(e);
         result.innerHTML = `
             <p style="color:red">
-                ❌ Wystąpił błąd podczas sprzedaży
+                Wystąpił błąd podczas sprzedaży
             </p>
         `;
         isProcessing = false;

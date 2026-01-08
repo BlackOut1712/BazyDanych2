@@ -14,17 +14,17 @@ async function refund() {
 
     if (!numerBiletu || !pin) {
         result.innerHTML =
-            '<p style="color:red">❌ Uzupełnij wszystkie pola</p>';
+            '<p style="color:red">Uzupełnij wszystkie pola</p>';
         return;
     }
 
-    // ✅ pobranie użytkownika w bezpieczny sposób
+    // pobranie użytkownika
     const userRaw =
         sessionStorage.getItem('user') || localStorage.getItem('user');
 
     if (!userRaw) {
         result.innerHTML =
-            '<p style="color:red">❌ Brak danych zalogowanego pracownika</p>';
+            '<p style="color:red">Brak danych zalogowanego pracownika</p>';
         return;
     }
 
@@ -42,13 +42,12 @@ async function refund() {
 
         result.innerHTML = `
             <p style="color:green">
-                ✅ Zwrot wykonany poprawnie<br>
+                Zwrot wykonany poprawnie<br>
                 Numer biletu: <b>${res.numer_biletu}</b><br>
                 Kwota zwrotu: <b>${res.kwota} zł</b>
             </p>
         `;
 
-        // opcjonalnie wyczyść pola
         document.getElementById('numerBiletu').value = '';
         document.getElementById('pin').value = '';
 
@@ -62,7 +61,7 @@ async function refund() {
 
         result.innerHTML = `
             <p style="color:red">
-                ❌ ${msg}
+                ${msg}
             </p>
         `;
     }
