@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <title>Zwrot biletu</title>
     <link rel="stylesheet" href="../css/style.css">
+
+    <!-- 🔐 SESJA -->
+    <script src="../js/session.js"></script>
+    <script>
+        checkSession(['KASJER', 'MENADZER']);
+    </script>
 </head>
 <body>
 
+<!-- TOP BAR -->
 <header class="top-bar">
     <div class="logo">Lotnisko</div>
     <div class="actions">
@@ -14,42 +21,64 @@
     </div>
 </header>
 
+<!-- CONTENT -->
 <main class="container">
 
     <section class="card">
         <h2>Zwrot biletu</h2>
 
-        <div class="form-group">
-            <label>Numer biletu</label>
-            <input type="text" id="numerBiletu" placeholder="np. AB12CD34">
+        <!-- INFORMACJA -->
+        <div class="info-box">
+            <p>
+                Wprowadź numer biletu oraz PIN klienta, aby wykonać zwrot.
+                Zwrot możliwy jest tylko dla biletów opłaconych.
+            </p>
         </div>
 
-        <div class="form-group">
-            <label>PIN klienta</label>
-            <input type="password" id="pin" placeholder="PIN klienta">
+        <!-- FORMULARZ -->
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="numerBiletu">Numer biletu</label>
+                <input
+                    type="text"
+                    id="numerBiletu"
+                    placeholder="np. AB12CD34"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="pin">PIN klienta</label>
+                <input
+                    type="password"
+                    id="pin"
+                    placeholder="PIN klienta"
+                >
+            </div>
+
         </div>
 
+        <!-- AKCJE -->
         <div class="actions">
             <button class="btn-danger" onclick="refund()">
-                Wykonaj zwrot
+                🔄 Wykonaj zwrot
             </button>
 
             <button class="btn-secondary" onclick="goBack()">
-                Wróć
+                ⬅ Wróć
             </button>
         </div>
 
-        <div id="refundResult"></div>
+        <!-- WYNIK -->
+        <div id="refundResult" class="form-result"></div>
     </section>
 
 </main>
 
-<script src="../js/session.js"></script>
-<script src="../js/cashier.js"></script>
+<!-- LOGIKA -->
+<script src="../js/app.js"></script>
+<script src="../js/refund.js"></script>
 
-<script>
-    checkSession(['KASJER']);
-</script>
 <script>
     function goBack() {
         window.location.href = 'dashboard.html';

@@ -21,5 +21,5 @@ function goToHistory() {
 }
 
 function goToSearch() {
-    window.location.href = '../index.html';
+    window.location.href = 'index.html';
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lot;
+use App\Models\Miejsce;
+use App\Models\Rezerwacja;
 use Illuminate\Http\Request;
 
 class LotController extends Controller
@@ -71,5 +73,31 @@ class LotController extends Controller
         return response()->json([
             'message' => 'Lot usunięty'
         ]);
+    }
+
+    /* ======================================================
+       ✅ NOWA METODA – BEZPIECZNE ROZSZERZENIE
+       GET /api/loty/{id}/miejsca
+       (zgodna z frontendem i UML)
+    ====================================================== */
+    public function dostepneMiejsca($id)
+    {
+        $lot = Lot::with('samolot')->findOrFail($id);
+
+        // wszystkie miejsca danego samolotu
+        $miejsca = Miejsce::where('samolot_id', $lot->samolot_id);
+
+        // zajęte miejsca w tym locie
+        $zajete = Rezerwacja::where('lot_id', $id)
+            ->whereIn('status', ['OCZEKUJE', 'POTWIERDZONA'])
+            ->pluck('miejsce_id');
+
+        // tylko dostępne
+        $dostepne = $miejsca
+            ->whereNotIn('id', $zajete)
+            ->orderBy('numer')
+            ->get();
+
+        return response()->json($dostepne);
     }
 }
