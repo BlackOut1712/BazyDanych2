@@ -16,18 +16,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     container.innerHTML = '<div style="text-align:center; padding:20px;">Pobieranie biletów...</div>';
 
     try {
-        // 2. Pobranie danych z API
-        const bilety = await apiFetch(`/moje-bilety/${userId}`);
+        // 1. Pobieramy WSZYSTKIE bilety
+        const data = await apiFetch(`/moje-bilety/${userId}`);
+        container.innerHTML='';
 
-        container.innerHTML = ''; // Czyścimy loader
+        // 2. Sprawdzamy, jaki tytuł ma strona (lub ID kontenera), żeby wiedzieć co pokazać
+        // Załóżmy, że w HTML "Historii" dodasz id="history-mode" do main lub body, 
+        // albo po prostu sprawdzisz tytuł nagłówka.
+        const isHistoryPage = document.querySelector('.page-title-card').innerText.includes('Historia');
 
-        if (!bilety || !bilety.length) {
-            container.innerHTML = '<div style="text-align:center; padding:30px; font-size:18px;">Nie masz jeszcze żadnych biletów.</div>';
-            return;
+        let biletyDoWyswietlenia = [];
+
+        if (isHistoryPage) {
+            // --- TRYB HISTORII ---
+            // Pokazujemy: Anulowane, Użyte, Zakończone
+            const statusyHistoryczne = ['Anulowany', 'Użyty', 'Zakończony', 'Zwrot'];
+            biletyDoWyswietlenia = data.filter(b => statusyHistoryczne.includes(b.status));     //!!!!!!!!!! BILETY Z TYM STATUSEM SA W HISTORII
+        } else {
+            // --- TRYB MOJE BILETY (DOMYŚLNY) ---
+            // Pokazujemy: Opłacony, Nowy, Oczekujący
+            const statusyAktywne = ['Opłacony', 'Potwierdzony', 'Nowy', 'aktywny'];         //!!!!!! WAZNE - BILETY Z TYM STATUSEM SA W MOJE-BILETY
+            biletyDoWyswietlenia = data.filter(b => statusyAktywne.includes(b.status));
         }
 
+        // 3. Obsługa pustej listy
+        if (!biletyDoWyswietlenia.length) {
+            container.innerHTML = '<div style="text-align:center; padding:30px;">Brak biletów w tej kategorii.</div>';
+            return;
+        }
         // 3. Generowanie kafelków
-        bilety.forEach(b => {
+        biletyDoWyswietlenia.forEach(b => {
             // Wyciąganie danych
             const lot = b.rezerwacja?.lot || {};
             const trasa = lot.trasa || {};
