@@ -1,0 +1,187 @@
+document.addEventListener('DOMContentLoaded', () => {
+    checkSession(['CLIENT']);
+
+    const biletId = localStorage.getItem('changeSeatBiletId');
+
+    if (!biletId) {
+        alert('Nie wybrano biletu');
+        window.location.href = '/client/tickets';
+        return;
+    }
+
+    loadTicket(biletId);
+});
+
+/* ============================
+   ZMIENNE GLOBALNE
+============================ */
+
+let selectedSeatId = null;
+let currentSeatId = null;
+let currentReservationId = null;
+let currentLotId = null;
+
+/* ============================
+   ŁADOWANIE BILETU
+============================ */
+
+async function loadTicket(biletId) {
+    try {
+        const bilet = await apiFetch(`/client/bilet/${biletId}`);
+
+
+        if (!bilet?.rezerwacja?.miejsce) {
+            throw new Error('Niekompletne dane biletu');
+        }
+
+        currentSeatId = bilet.rezerwacja.miejsce.id;
+        currentReservationId = bilet.rezerwacja.id;
+        currentLotId = bilet.rezerwacja.miejsce.lot_id;
+
+        renderTicketInfo(bilet);
+        loadSeatsForLot(currentLotId, currentSeatId);
+
+    } catch (e) {
+        console.error(e);
+        alert('Błąd ładowania biletu');
+    }
+}
+
+function renderTicketInfo(b) {
+    const info = document.getElementById('ticketInfo');
+    const trasa = b.rezerwacja.miejsce.lot.trasa;
+
+    info.innerHTML = `
+        <p><b>Pasażer:</b> ${b.imie_pasazera} ${b.nazwisko_pasazera}</p>
+        <p><b>Lot:</b>
+            ${trasa.lotnisko_wylotu.miasto}
+            →
+            ${trasa.lotnisko_przylotu.miasto}
+        </p>
+        <p><b>Obecne miejsce:</b> ${b.rezerwacja.miejsce.numer_miejsca}</p>
+    `;
+}
+
+/* ============================
+   MAPA MIEJSC – 1:1 JAK SELL
+============================ */
+
+async function loadSeatsForLot(lotId, currentSeatId) {
+    const map = document.getElementById('seatMap');
+    map.innerHTML = '';
+
+    const miejsca = await apiFetch(`/loty/${lotId}/miejsca`);
+
+    if (!Array.isArray(miejsca) || !miejsca.length) {
+        map.innerHTML = '<p>Brak miejsc</p>';
+        return;
+    }
+
+    const byClass = { FIRST: [], BUSINESS: [], ECONOMY: [] };
+    miejsca.forEach(m => byClass[String(m.klasa).toUpperCase()]?.push(m));
+
+    const createAisle = () => {
+        const d = document.createElement('div');
+        d.className = 'seat-aisle';
+        return d;
+    };
+
+    const renderSection = (label, seats) => {
+        if (!seats.length) return;
+
+        const header = document.createElement('div');
+        header.className = 'class-section';
+        header.textContent = label;
+        map.appendChild(header);
+
+        const rows = {};
+        seats.forEach(m => {
+            const row = m.numer.match(/\d+/)?.[0];
+            rows[row] ??= [];
+            rows[row].push(m);
+        });
+
+        Object.keys(rows).sort((a, b) => a - b).forEach(row => {
+            const rowLabel = document.createElement('div');
+            rowLabel.className = 'row-label';
+            rowLabel.textContent = row;
+            map.appendChild(rowLabel);
+
+            rows[row]
+                .sort((a, b) => a.numer.localeCompare(b.numer))
+                .forEach((m, index) => {
+                    const seat = document.createElement('div');
+                    seat.className = `seat ${m.klasa.toLowerCase()}`;
+
+                    if (m.zajete && m.id !== currentSeatId) {
+                        seat.classList.add('taken');
+                    }
+
+                    seat.textContent = m.numer.slice(-1);
+
+                    if (m.id === currentSeatId) {
+                        seat.classList.add('selected');
+                        selectedSeatId = m.id;
+                    }
+
+                    if (!m.zajete || m.id === currentSeatId) {
+                        seat.onclick = () => selectSeat(m.id, seat);
+                    }
+
+                    map.appendChild(seat);
+
+                    if (index === 2) map.appendChild(createAisle());
+                });
+        });
+    };
+
+    renderSection('FIRST CLASS', byClass.FIRST);
+    renderSection('BUSINESS CLASS', byClass.BUSINESS);
+    renderSection('ECONOMY CLASS', byClass.ECONOMY);
+}
+
+/* ============================
+   WYBÓR MIEJSCA
+============================ */
+
+function selectSeat(seatId, el) {
+    document.querySelectorAll('.seat.selected')
+        .forEach(s => s.classList.remove('selected'));
+
+    el.classList.add('selected');
+    selectedSeatId = seatId;
+}
+
+/* ============================
+   ZAPIS ZMIANY
+============================ */
+
+async function confirmSeatChange() {
+    if (!selectedSeatId) {
+        alert('Wybierz nowe miejsce');
+        return;
+    }
+
+    if (selectedSeatId === currentSeatId) {
+        alert('Wybrano to samo miejsce');
+        return;
+    }
+
+    try {
+        await apiFetch('/rezerwacje/zmien-miejsce', {
+            method: 'POST',
+            body: JSON.stringify({
+                rezerwacja_id: currentReservationId,
+                nowe_miejsce_id: selectedSeatId
+            })
+        });
+
+        alert('✔ Miejsce zostało zmienione');
+        localStorage.removeItem('changeSeatBiletId');
+        window.location.href = '/client/tickets';
+
+    } catch (e) {
+        console.error(e);
+        alert('❌ Błąd zmiany miejsca');
+    }
+}

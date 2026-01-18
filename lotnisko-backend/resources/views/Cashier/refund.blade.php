@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Zwrot biletu</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- SESJA -->
+    <script src="/js/session.js"></script>
+    <script>
+        checkSession(['KASJER', 'MENADZER']);
+    </script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+    <div class="logo">Lotnisko</div>
+    <div class="actions">
+        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+    </div>
+</header>
+
+<!-- CONTENT -->
+<main class="container">
+
+    <section class="card">
+        <h2>Zwrot biletu</h2>
+
+        <!-- INFORMACJA -->
+        <div class="info-box">
+            <p>
+                Wprowadź numer biletu oraz PIN klienta, aby wykonać zwrot.
+                Zwrot możliwy jest tylko dla biletów opłaconych.
+            </p>
+        </div>
+
+        <!-- FORMULARZ -->
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="numerBiletu">Numer biletu</label>
+                <input
+                    type="text"
+                    id="numerBiletu"
+                    placeholder="np. AB12CD34"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="pin">PIN klienta</label>
+                <input
+                    type="password"
+                    id="pin"
+                    placeholder="PIN klienta"
+                >
+            </div>
+
+        </div>
+
+        <!-- AKCJE -->
+        <div class="actions">
+            <button class="btn-danger" onclick="refund()">
+                🔄 Wykonaj zwrot
+            </button>
+
+            <button class="btn-secondary" onclick="goBack()">
+                ⬅ Wróć
+            </button>
+        </div>
+
+        
+        <div id="refundResult" class="form-result"></div>
+    </section>
+
+</main>
+
+<script src="/js/app.js"></script>
+<script src="/js/refund.js"></script>
+
+<script>
+    function goBack() {
+        window.location.href = '/cashier/dashboard';
+    }
+</script>
+
+</body>
+</html>

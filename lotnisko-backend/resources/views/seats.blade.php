@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Wybór miejsca</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo"><a href="/index">Lotnisko</a></div>
+</header>
+
+<main class="container seats-layout">
+
+    <!-- MAPA SAMOLOTU -->
+    <section class="plane-wrapper">
+        <div id="plane" class="plane">
+            
+        </div>
+
+        <div class="legend">
+            <div><span class="seat free"></span> wolne</div>
+            <div><span class="seat taken"></span> zajęte</div>
+            <div><span class="seat selected"></span> wybrane</div>
+        </div>
+    </section>
+
+    
+    <aside class="summary-panel">
+        <h3>Podsumowanie</h3>
+
+        <div id="flightInfo"></div>
+
+        <div class="summary-block">
+            <strong>Wybrane miejsce:</strong>
+            <span id="selectedSeat">—</span>
+        </div>
+
+        <button id="reserveBtn" disabled>Rezerwuj</button>
+    </aside>
+
+</main>
+
+<script src="/js/session.js"></script>
+<script src="/js/seats.js"></script>
+</body>
+</html>
