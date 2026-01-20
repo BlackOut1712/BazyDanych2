@@ -74,16 +74,18 @@ function payBlik() {
             if (existingBiletId) {
 
                 const response = await fetch(
-                    `http://127.0.0.1:8000/api/bilety/${existingBiletId}/pay`,
+                    `${API_URL}/bilety/${existingBiletId}/pay`,
                     {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-User-Role': 'CLIENT',
                             'X-Client-Id': user.id
-                        }
-                    }
-                );
+                        },
+                        body: JSON.stringify({
+                            bilet_id: existingBiletId
+                        })
+                    });
 
                 if (!response.ok) {
                     throw new Error('Błąd opłacania biletu');
@@ -102,9 +104,8 @@ function payBlik() {
                     window.location.href = '/client/dashboard';
                     return;
                 }
-
                 const response = await fetch(
-                    'http://127.0.0.1:8000/api/bilety/client',
+                    `${API_URL}/bilety/client`,
                     {
                         method: 'POST',
                         headers: {
@@ -120,6 +121,7 @@ function payBlik() {
                         })
                     }
                 );
+        
 
                 if (!response.ok) {
                     throw new Error('Błąd zapisu biletu');
