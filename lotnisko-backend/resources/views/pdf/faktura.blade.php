@@ -3,11 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        body { font-family: DejaVu Sans; font-size: 12px; }
-        h1 { text-align: center; }
-        .section { margin-bottom: 20px; }
-        .row { display: flex; justify-content: space-between; }
-        .box { border: 1px solid #ccc; padding: 10px; }
+        body {
+            font-family: DejaVu Sans;
+            font-size: 12px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .box {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -29,17 +42,20 @@
 
 <div class="section box">
     <b>Nabywca</b><br>
-    {{ $klient->imie }} {{ $klient->nazwisko }}<br>
-    PESEL: {{ $klient->pesel }}
+    {{ $klient->imie ?? '—' }} {{ $klient->nazwisko ?? '—' }}<br>
+    PESEL: {{ $klient->pesel ?? '—' }}
 </div>
 
 <div class="section box">
     <b>Usługa</b><br>
     Bilet lotniczy<br>
-    Trasa: {{ $trasa->lotniskoWylotu->miasto }}
+
+    Trasa:
+    {{ $trasa?->lotniskoWylotu?->miasto ?? '—' }}
     →
-    {{ $trasa->lotniskoPrzylotu->miasto }}<br>
-    Miejsce: {{ $miejsce->numer }}
+    {{ $trasa?->lotniskoPrzylotu?->miasto ?? '—' }}<br>
+
+    
 </div>
 
 <div class="section box">

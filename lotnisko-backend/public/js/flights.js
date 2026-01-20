@@ -34,17 +34,22 @@ async function loadSamoloty() {
 
     try {
         const samoloty = await apiFetch('/samoloty');
-        samoloty.forEach(s => {
-            select.innerHTML += `
-                <option value="${s.id}">
-                    ${s.model} (${s.liczba_miejsc})
-                </option>
-            `;
-        });
+
+        samoloty
+            .filter(s => s.status === true) // ✅ tylko aktywne
+            .forEach(s => {
+                select.innerHTML += `
+                    <option value="${s.id}">
+                        ${s.model} (${s.liczba_miejsc})
+                    </option>
+                `;
+            });
+
     } catch (e) {
         console.error('Błąd ładowania samolotów:', e);
     }
 }
+
 
 /* ============================
    LISTA LOTÓW
@@ -161,6 +166,9 @@ function addFlight() {
 /* ============================
    ZAPIS LOTU (ADD + EDIT)
 ============================ */
+/* ============================
+   ZAPIS LOTU (ADD + EDIT)
+============================ */
 async function saveFlight() {
     const id = document.getElementById('flightId').value;
 
@@ -176,7 +184,6 @@ async function saveFlight() {
         cena_business = Number(parts[1]);
     }
 
-    // wymagaj cen tylko przy dodawaniu
     if (
         !isEditMode &&
         (
@@ -187,6 +194,18 @@ async function saveFlight() {
     ) {
         alert('Musisz wybrać zakres cen (Economy / Business) dla nowego lotu');
         return;
+    }
+
+    // 🔴 BLOKADA: samolot nieaktywny
+    if (!isEditMode) {
+        const samolotId = Number(document.getElementById('samolotSelect').value);
+        const samoloty = await apiFetch('/samoloty');
+        const samolot = samoloty.find(s => s.id === samolotId);
+
+        if (!samolot || samolot.status !== 'AKTYWNY') {
+            alert('Nie można dodać lotu – wybrany samolot jest nieaktywny');
+            return;
+        }
     }
 
     const payload = {
@@ -207,8 +226,7 @@ async function saveFlight() {
     }
 
     if (!isEditMode) {
-        payload.samolot_id =
-            Number(document.getElementById('samolotSelect').value);
+        payload.samolot_id = Number(document.getElementById('samolotSelect').value);
     }
 
     try {

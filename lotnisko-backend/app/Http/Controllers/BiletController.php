@@ -285,60 +285,54 @@ class BiletController extends Controller
     // =============================
     // FAKTURA
     // =============================
-    public function faktura(Request $request, $id)
-    {
-        $this->requireRole($request, ['KASJER', 'MENADZER']);
+public function faktura(Request $request, $id)
+{
+    $this->requireRole($request, ['KASJER', 'MENADZER']);
 
-        $bilet = Bilet::with([
-            'rezerwacja.klient',
-            'rezerwacja.miejsce',
-            'rezerwacja.miejsce.lot.ceny',
-            'rezerwacja.miejsce.lot.trasa.lotniskoWylotu',
-            'rezerwacja.miejsce.lot.trasa.lotniskoPrzylotu'
-        ])->findOrFail($id);
+    $bilet = Bilet::with([
+        'rezerwacja.klient',
+        'rezerwacja.miejsce.lot.trasa.lotniskoWylotu',
+        'rezerwacja.miejsce.lot.trasa.lotniskoPrzylotu',
+    ])->findOrFail($id);
 
-        if ($bilet->status !== 'OPLACONY') {
-            abort(409, 'Faktura dostępna tylko dla opłaconych biletów');
-        }
-
-        /* =========================
-        ✅ WYLICZENIE CENY Z BAZY
-        (MINIMALNA DOKŁADKA)
-        ========================= */
-        $kwota = null;
-
-        $miejsce = $bilet->rezerwacja->miejsce ?? null;
-        $lot = $miejsce?->lot ?? null;
-
-        if ($lot && $miejsce && $lot->ceny) {
-            $cena = $lot->ceny->firstWhere(
-                'klasa',
-                strtoupper($miejsce->klasa)
-            );
-
-            if ($cena && $cena->cena !== null) {
-                $kwota = $cena->cena;
-            }
-        }
-
-        // 🧯 fallback – zostaje jak było
-        if ($kwota === null) {
-            $kwota = 300;
-        }
-
-        $pdf = Pdf::loadView('pdf.faktura', [
-            'numer_faktury' => 'FV/' . now()->format('Ymd') . '/' . $bilet->id,
-            'data' => now()->toDateString(),
-            'bilet' => $bilet,
-            'klient' => $bilet->rezerwacja->klient,
-            'lot' => $lot,
-            'trasa' => $lot->trasa,
-            'miejsce' => $miejsce,
-            'kwota' => $kwota
-        ]);
-
-        return $pdf->stream('faktura.pdf');
+    if ($bilet->status !== 'OPLACONY') {
+        abort(409, 'Faktura dostępna tylko dla opłaconych biletów');
     }
+
+    // ===== POWIĄZANIA =====
+    $rezerwacja = $bilet->rezerwacja;
+    $lot = $rezerwacja?->miejsce?->lot;
+    $trasa = $lot?->trasa;
+
+    // ===== ✅ POPRAWNA KWOTA Z PŁATNOŚCI =====
+    $platnosc = Platnosc::where('bilet_id', $bilet->id)
+        ->orderByDesc('data_platnosci')
+        ->first();
+
+    if (!$platnosc) {
+        abort(409, 'Brak płatności dla tego biletu');
+    }
+
+    $kwota = $platnosc->kwota;
+
+    // ===== PDF =====
+    $pdf = Pdf::loadView('pdf.faktura', [
+        'numer_faktury' => 'FV/' . now()->format('Ymd') . '/' . $bilet->id,
+        'data'          => now()->toDateString(),
+
+        'klient'        => $rezerwacja->klient,
+
+        'lot'           => $lot,
+        'trasa'         => $trasa,
+
+        // 💰 REALNA ZAPŁACONA KWOTA
+        'kwota'         => $kwota
+    ]);
+
+    return $pdf->stream('faktura.pdf');
+}
+
+
 
     public function fakturaWeb(Request $request, $id)
     {
