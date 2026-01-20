@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    /* =========================
+       LOGIN (BEZ ZMIAN)
+    ========================= */
     public function login(Request $request)
     {
         $request->validate([
@@ -19,7 +22,7 @@ class AuthController extends Controller
         $identifier = $request->identifier;
         $secret = $request->secret;
 
-        // Klient - EMAIL I PIN
+        // KLIENT – EMAIL + HASŁO
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
 
             $klient = Klient::where('email', $identifier)->first();
@@ -31,12 +34,12 @@ class AuthController extends Controller
             }
 
             return response()->json([
-                'role' => 'CLIENT', 
+                'role' => 'CLIENT',
                 'user' => $klient,
             ]);
         }
 
-        // PRACOWNIK - LOGIN I HASLO
+        // PRACOWNIK – LOGIN + HASŁO
         $pracownik = Pracownik::where('login', $identifier)->first();
 
         if (!$pracownik || !Hash::check($secret, $pracownik->haslo)) {
@@ -55,5 +58,32 @@ class AuthController extends Controller
             'role' => strtoupper($pracownik->rola), // KASJER / MENADZER
             'user' => $pracownik,
         ]);
+    }
+
+    /* =========================
+       REJESTRACJA (NOWA, BEZ WPŁYWU NA LOGIN)
+    ========================= */
+    public function register(Request $request)
+    {
+        $data = $request->validate([
+            'imie'      => 'required|string|max:100',
+            'nazwisko'  => 'required|string|max:100',
+            'email'     => 'required|email|unique:klients,email',
+            'pesel'     => 'required|string|size:11|unique:klients,pesel',
+            'haslo'     => 'required|string|min:6',
+        ]);
+
+        $klient = Klient::create([
+            'imie'     => $data['imie'],
+            'nazwisko' => $data['nazwisko'],
+            'email'    => $data['email'],
+            'pesel'    => $data['pesel'],
+            'haslo'    => Hash::make($data['haslo']),
+        ]);
+
+        return response()->json([
+            'message' => 'Rejestracja zakończona sukcesem',
+            'user'    => $klient
+        ], 201);
     }
 }

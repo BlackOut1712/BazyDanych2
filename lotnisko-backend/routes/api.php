@@ -21,7 +21,7 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 */
 Route::post('/login', [AuthController::class, 'login']);
-
+Route::post('/register', [AuthController::class, 'register']);
 /*
 |--------------------------------------------------------------------------
 | KLIENCI

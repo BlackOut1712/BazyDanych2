@@ -204,5 +204,51 @@ class RezerwacjaController extends Controller
         ]);
     });
 }
+public function zmienMiejsce(Request $request)
+{
+    $data = $request->validate([
+        'rezerwacja_id'    => 'required|exists:rezerwacjes,id',
+        'nowe_miejsce_id'  => 'required|exists:miejscas,id',
+    ]);
+
+    return DB::transaction(function () use ($data) {
+
+        $rezerwacja = DB::table('rezerwacjes')
+            ->where('id', $data['rezerwacja_id'])
+            ->lockForUpdate()
+            ->first();
+
+        if (!$rezerwacja) {
+            abort(404, 'Rezerwacja nie istnieje');
+        }
+
+        // 🔒 stare miejsce → zwalniamy
+        DB::table('miejscas')
+            ->where('id', $rezerwacja->miejsce_id)
+            ->update(['czy_zajete' => false]);
+
+        // 🔒 nowe miejsce → sprawdzamy i blokujemy
+        $nowe = DB::table('miejscas')
+            ->where('id', $data['nowe_miejsce_id'])
+            ->where('czy_zajete', false)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$nowe) {
+            abort(409, 'Miejsce jest już zajęte');
+        }
+
+        DB::table('miejscas')
+            ->where('id', $data['nowe_miejsce_id'])
+            ->update(['czy_zajete' => true]);
+
+        DB::table('rezerwacjes')
+            ->where('id', $rezerwacja->id)
+            ->update(['miejsce_id' => $data['nowe_miejsce_id']]);
+
+        return response()->json(['message' => 'Miejsce zmienione']);
+    });
+}
+
 
 }

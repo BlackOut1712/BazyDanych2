@@ -2,51 +2,44 @@ function payBlik() {
     const code = document.getElementById('blikCode').value.trim();
     const result = document.getElementById('blikResult');
 
-    // ✅ Walidacja kodu BLIK
     if (!/^\d{6}$/.test(code)) {
-        result.innerHTML =
-            `<p style="color:red">Kod BLIK musi mieć 6 cyfr</p>`;
+        result.innerHTML = `<p style="color:red">Kod BLIK musi mieć 6 cyfr</p>`;
         return;
     }
 
     result.innerHTML = `<p>⏳ Przetwarzanie płatności...</p>`;
 
-    // ⏳ SYMULACJA BANKU
     setTimeout(async () => {
-
         const role = getSessionItem('role');
 
         try {
-            /* ======================================
-               🔥 KASJER → OPŁATA ISTNIEJĄCEGO BILETU
-            ====================================== */
             if (role === 'KASJER') {
+                const biletIdRaw  = localStorage.getItem('blik_bilet_id');
+                const clientIdRaw = localStorage.getItem('blik_client_id');
 
-                const biletId  = localStorage.getItem('blik_bilet_id');
-                const clientId = localStorage.getItem('blik_client_id');
-
-                // ❗ Twarda walidacja
-                if (!biletId) {
-                    alert('Brak biletu do opłacenia');
+                if (!biletIdRaw || !clientIdRaw) {
+                    alert('Brak danych do płatności');
                     window.location.href = '/cashier/dashboard';
                     return;
                 }
 
-                if (!clientId) {
-                    alert('Brak klienta do płatności');
-                    window.location.href = '/cashier/dashboard';
-                    return;
+                // ✅ WYMUSZENIE TYPÓW (KLUCZOWE)
+                const biletId  = Number(biletIdRaw);
+                const clientId = Number(clientIdRaw);
+
+                if (!Number.isInteger(biletId) || !Number.isInteger(clientId)) {
+                    throw new Error('Nieprawidłne ID biletu lub klienta');
                 }
 
-                // 🔥 KLUCZ: ręcznie NADPISUJEMY klienta
                 await apiFetch(`/bilety/${biletId}/pay`, {
                     method: 'POST',
                     headers: {
-                        'X-Client-Id': clientId   // 👈 WYGRYWA z apiFetch
-                    }
+                        'Content-Type': 'application/json',
+                        'X-Client-Id': clientId
+                    },
+                    body: JSON.stringify({}) // backend oczekuje JSON
                 });
 
-                // 🧹 sprzątanie po sukcesie
                 localStorage.removeItem('blik_bilet_id');
                 localStorage.removeItem('blik_client_id');
 
@@ -61,12 +54,10 @@ function payBlik() {
             return;
         }
 
-        // 🔐 odświeżenie sesji
         if (typeof updateActivity === 'function') {
             updateActivity();
         }
 
-        // ⏩ przekierowanie
         setTimeout(() => {
             if (role === 'KASJER') {
                 window.location.href = '/cashier/dashboard';

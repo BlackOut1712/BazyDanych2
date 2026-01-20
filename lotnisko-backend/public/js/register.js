@@ -18,9 +18,11 @@ function isValidPin(pin) {
 function isValidPesel(pesel) {
     return /^\d{11}$/.test(pesel);
 }
+
 function isValidPhone(phone) {
     return /^\d{9}$/.test(phone); // 9 cyfr – standard PL
 }
+
 /* ============================
    REJESTRACJA KLIENTA
 ============================ */
@@ -70,7 +72,10 @@ async function register() {
         ============================ */
         const registerResponse = await fetch(`${API_URL}/klienci`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({
                 imie,
                 nazwisko,
@@ -89,14 +94,17 @@ async function register() {
         }
 
         /* ============================
-           AUTO-LOGIN
+           AUTO-LOGIN (ZGODNY Z AuthController)
         ============================ */
         const loginResponse = await fetch(`${API_URL}/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({
-                email,
-                haslo: pin
+                identifier: email,
+                secret: pin
             })
         });
 
@@ -108,8 +116,11 @@ async function register() {
             return;
         }
 
-        localStorage.setItem('token', loginData.token);
-        localStorage.setItem('userRole', 'KLIENT');
+        /* ============================
+           SESJA (BEZ TOKENA – JAK MASZ W SYSTEMIE)
+        ============================ */
+        localStorage.setItem('userRole', loginData.role);
+        localStorage.setItem('userId', loginData.user.id);
 
         window.location.href = '/client/dashboard';
 
@@ -118,4 +129,3 @@ async function register() {
         alert('Błąd połączenia z serwerem');
     }
 }
-
