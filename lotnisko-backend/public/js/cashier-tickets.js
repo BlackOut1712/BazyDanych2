@@ -146,21 +146,12 @@ function changeSeat(biletId) {
  *   <<include>> Zwrot środków
  *   <<include>> Anulowanie rezerwacji
  */
-async function refundTicket(biletId) {
+function refundTicket(biletId) {
     if (!confirm('Czy na pewno chcesz zwrócić ten bilet?')) return;
 
-    try {
-        await apiFetch(`/bilety/${biletId}/zwrot`, {
-            method: 'POST'
-        });
+    localStorage.setItem('refund_bilet_id', biletId);
 
-        alert('✔ Bilet został zwrócony');
-        loadTickets();
-
-    } catch (e) {
-        console.error(e);
-        alert('❌ Błąd zwrotu biletu');
-    }
+    window.location.href = '/cashier/refund';
 }
 
 /**

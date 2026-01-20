@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Illuminate\Support\Facades\Hash;
+use App\Models\Klient;
 class BiletController extends Controller
 {
     // =============================
@@ -167,42 +168,74 @@ class BiletController extends Controller
     // =============================
     // ZWROT BILETU (KASJER / MENADŻER)
     // =============================
+
+
     public function refund(Request $request)
-    {
-        $this->requireRole($request, ['KASJER','CLIENT', 'MENADZER']);
+{
+    $this->requireRole($request, ['KASJER', 'MENADZER', 'CLIENT']);
 
-        $data = $request->validate([
-            'numer_biletu' => 'required|string|exists:bilets,numer_biletu',
-        ]);
+    $data = $request->validate([
+        'numer_biletu' => 'required|string|exists:bilets,numer_biletu',
+        'pin'          => 'required|string|min:6',
+    ]);
 
-        return DB::transaction(function () use ($data) {
+    return DB::transaction(function () use ($data, $request) {
 
-            $bilet = Bilet::with('rezerwacja')
-                ->lockForUpdate()
-                ->where('numer_biletu', $data['numer_biletu'])
-                ->firstOrFail();
+        $bilet = Bilet::with('rezerwacja')
+            ->lockForUpdate()
+            ->where('numer_biletu', $data['numer_biletu'])
+            ->firstOrFail();
 
-            if ($bilet->status !== 'OPLACONY') {
-                abort(409, 'Tylko opłacony bilet może zostać zwrócony');
+        if ($bilet->status !== 'OPLACONY') {
+            abort(409, 'Tylko opłacony bilet może zostać zwrócony');
+        }
+
+        $role = strtoupper($request->header('X-User-Role'));
+        $headerClientId = $request->header('X-Client-Id');
+
+        // 🔐 CLIENT → tylko własny bilet
+        if ($role === 'CLIENT') {
+            if (!$headerClientId) {
+                abort(401, 'Brak identyfikatora klienta');
             }
 
-            Platnosc::create([
-                'kwota'     => -350,
-                'metoda'    => 'GOTOWKA',
-                'status'    => 'ZWROT',
-                'bilet_id'  => $bilet->id,
-                'klient_id' => $bilet->rezerwacja->klient_id,
-            ]);
+            if ($bilet->rezerwacja->klient_id != $headerClientId) {
+                abort(403, 'Nie możesz zwrócić cudzego biletu');
+            }
+        }
 
-            $bilet->update(['status' => 'ZWRÓCONY']);
-            $bilet->rezerwacja->update(['status' => 'ANULOWANA']);
+        $klient = Klient::find($bilet->rezerwacja->klient_id);
 
-            return response()->json([
-                'message'      => 'Zwrot biletu wykonany poprawnie',
-                'numer_biletu' => $bilet->numer_biletu,
-            ]);
-        });
-    }
+        if (!$klient) {
+            abort(404, 'Nie znaleziono klienta dla biletu');
+        }
+
+        // 🔑 PIN = HASŁO KLIENTA
+        if (!Hash::check($data['pin'], $klient->haslo)) {
+            abort(403, 'Nieprawidłowy PIN klienta');
+        }
+
+        Platnosc::create([
+            'kwota'     => -350,
+            'metoda'    => 'GOTOWKA',
+            'status'    => 'ZWROT',
+            'bilet_id'  => $bilet->id,
+            'klient_id' => $klient->id,
+        ]);
+
+        $bilet->update(['status' => 'ZWRÓCONY']);
+        $bilet->rezerwacja->update(['status' => 'ANULOWANA']);
+
+        return response()->json([
+            'message'      => 'Zwrot biletu wykonany poprawnie',
+            'numer_biletu' => $bilet->numer_biletu,
+        ]);
+    });
+}
+
+
+
+
 
     // =============================
     // LISTA BILETÓW (PRACOWNICY)
@@ -370,6 +403,9 @@ class BiletController extends Controller
         $this->requireRole($request, ['CLIENT']);
 
         $klientId = $request->header('X-Client-Id');
+        if (!$klientId) {
+            abort(401, 'Brak identyfikatora klienta');
+        }
 
         $bilet = Bilet::with([
             'rezerwacja.miejsce.lot.trasa.lotniskoWylotu',
@@ -383,9 +419,10 @@ class BiletController extends Controller
 
         return response()->json($bilet);
     }
+
     public function payExisting(Request $request, $id)
     {
-        $this->requireRole($request, ['CLIENT']);
+        $this->requireRole($request, ['CLIENT', 'KASJER']);
 
         $klientId = $request->header('X-Client-Id');
         if (!$klientId) {
@@ -466,5 +503,69 @@ class BiletController extends Controller
         });
     }
 
+    public function refundClient(Request $request)
+    {
+        $this->requireRole($request, ['CLIENT']);
+
+        $data = $request->validate([
+            'bilet_id' => 'required|integer|exists:bilets,id',
+            'pin'      => 'required|string|min:6',
+        ]);
+
+        return DB::transaction(function () use ($data, $request) {
+
+            $clientId = $request->header('X-Client-Id');
+            if (!$clientId) {
+                abort(401, 'Brak identyfikatora klienta');
+            }
+
+            $bilet = Bilet::with('rezerwacja')
+                ->lockForUpdate()
+                ->findOrFail($data['bilet_id']);
+
+            if ($bilet->status !== 'OPLACONY') {
+                abort(409, 'Bilet nie jest opłacony lub został już zwrócony');
+            }
+
+            if ((int)$bilet->rezerwacja->klient_id !== (int)$clientId) {
+                abort(403, 'To nie jest Twój bilet');
+            }
+
+            $klient = Klient::findOrFail($clientId);
+
+            if (!Hash::check($data['pin'], $klient->haslo)) {
+                abort(403, 'Nieprawidłowy PIN');
+            }
+
+            // 💰 ZWROT
+            Platnosc::create([
+                'kwota'     => -350,
+                'metoda'    => 'BLIK',
+                'status'    => 'ZWROT',
+                'data_platnosci' => now(),
+                'bilet_id'  => $bilet->id,
+                'klient_id' => $klient->id,
+            ]);
+
+            $bilet->update(['status' => 'ZWROCONY']);
+            $bilet->rezerwacja->update(['status' => 'ANULOWANA']);
+
+            return response()->json([
+                'message'  => 'Zwrot wykonany poprawnie',
+                'bilet_id' => $bilet->id,
+            ]);
+        });
+    }
+    public function show(Request $request, $id)
+    {
+        $this->requireRole($request, ['KASJER', 'MENADZER']);
+
+        $bilet = Bilet::with([
+            'rezerwacja.miejsce.lot.trasa.lotniskoWylotu',
+            'rezerwacja.miejsce.lot.trasa.lotniskoPrzylotu',
+        ])->findOrFail($id);
+
+        return response()->json($bilet);
+    }
 
 }

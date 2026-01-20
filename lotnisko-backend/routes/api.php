@@ -30,6 +30,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/klienci', [KlientController::class, 'index']);
 Route::post('/klienci', [KlientController::class, 'store']);
 Route::get('/klienci/{id}', [KlientController::class, 'show']);
+Route::get('/client/profile', [KlientController::class, 'profile']);
+Route::put('/client/profile', [KlientController::class, 'updateProfile']);
 
 /*
 |--------------------------------------------------------------------------
@@ -110,7 +112,13 @@ Route::post('/client/bilety/zwrot', [BiletController::class, 'refundClient']);
 /* ✅ OPŁACENIE ISTNIEJĄCEGO BILETU */
 Route::post('/bilety/{id}/pay', [BiletController::class, 'payExisting']);
 
-
+Route::get('/bilety/{id}', [BiletController::class, 'show']);
+Route::post(
+    '/client/rezerwacje/zmien-miejsce',
+    [RezerwacjaController::class, 'zmienMiejsceKlient']
+);
+Route::get('/platnosci', [PlatnoscController::class, 'index']);
+Route::post('/platnosci', [PlatnoscController::class, 'store']);
 /*
 |--------------------------------------------------------------------------
 | 🔥 KLIENT – ZAKUP
@@ -169,3 +177,6 @@ Route::post('/samoloty', [SamolotController::class, 'store']);
 Route::put('/samoloty/{id}', [SamolotController::class, 'update']);
 
 Route::post('/miejsca', [MiejsceController::class, 'store']);
+
+
+

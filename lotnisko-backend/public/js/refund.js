@@ -20,8 +20,8 @@ async function refund() {
         return;
     }
 
-    // ✅ używamy wspólnej funkcji sesji
-    const user = getUser();
+    // ✅ sprawdzamy tylko pracownika (sesja)
+    const user = getUser?.();
 
     if (!user || !user.id) {
         result.innerHTML =
@@ -30,12 +30,17 @@ async function refund() {
     }
 
     try {
+        /**
+         * 🔥 KLUCZOWA ZMIANA:
+         * - PIN = hasło KLIENTA
+         * - klient jest ustalany w backendzie po numerze biletu
+         * - NIE wysyłamy client_id
+         */
         const res = await apiFetch('/bilety/zwrot', {
             method: 'POST',
             body: JSON.stringify({
                 numer_biletu: numerBiletu,
-                pin: pin,
-                pracownik_id: user.id
+                pin: pin
             })
         });
 
@@ -70,6 +75,5 @@ async function refund() {
    POWRÓT DO DASHBOARDU
 ============================ */
 function goBack() {
-    // 🔴 Laravel route, NIE html
     window.location.href = '/cashier/dashboard';
 }

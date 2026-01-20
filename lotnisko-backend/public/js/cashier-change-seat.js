@@ -21,12 +21,25 @@ let currentSeatId = null;
 let currentReservationId = null;
 let currentLotId = null;
 
+/* ============================
+   ŁADOWANIE BILETU
+============================ */
+
 async function loadTicket(biletId) {
     try {
         const bilet = await apiFetch(`/bilety/${biletId}`);
 
+        // ❌ brak danych
         if (!bilet || !bilet.rezerwacja || !bilet.rezerwacja.miejsce) {
             throw new Error('Niekompletne dane biletu');
+        }
+
+        // 🔥 KLUCZOWE ZABEZPIECZENIE
+        if (bilet.status !== 'OPLACONY') {
+            alert('Nie można zmieniać miejsca dla zwróconego lub nieopłaconego biletu');
+            localStorage.removeItem('changeSeatBiletId');
+            window.location.href = '/cashier/menagment';
+            return;
         }
 
         currentSeatId = bilet.rezerwacja.miejsce.id;
@@ -35,12 +48,13 @@ async function loadTicket(biletId) {
 
         renderTicketInfo(bilet);
 
-        // 🔥 KLUCZOWE: ładujemy mapę dokładnie jak w SELL
-        loadSeatsForLot(currentLotId, currentSeatId);
+        // ✅ mapa tylko dla poprawnego biletu
+        await loadSeatsForLot(currentLotId, currentSeatId);
 
     } catch (e) {
         console.error(e);
         alert('Błąd ładowania biletu');
+        window.location.href = '/cashier/menagment';
     }
 }
 
@@ -60,7 +74,7 @@ function renderTicketInfo(b) {
 }
 
 /* ============================
-   MAPA MIEJSC – IDENTYCZNA JAK SELL
+   MAPA MIEJSC
 ============================ */
 
 async function loadSeatsForLot(lotId, currentSeatId) {
@@ -68,19 +82,20 @@ async function loadSeatsForLot(lotId, currentSeatId) {
     map.innerHTML = '';
 
     const miejsca = await apiFetch(`/loty/${lotId}/miejsca`);
+
     if (!Array.isArray(miejsca) || miejsca.length === 0) {
-        map.innerHTML = `<p>Brak miejsc w samolocie</p>`;
+        map.innerHTML = '<p>Brak miejsc w samolocie</p>';
         return;
     }
 
     const byClass = { FIRST: [], BUSINESS: [], ECONOMY: [] };
     miejsca.forEach(m => byClass[String(m.klasa).toUpperCase()]?.push(m));
 
-    function createAisle() {
-        const div = document.createElement('div');
-        div.className = 'seat-aisle';
-        return div;
-    }
+    const createAisle = () => {
+        const d = document.createElement('div');
+        d.className = 'seat-aisle';
+        return d;
+    };
 
     const renderSection = (label, seats) => {
         if (!seats.length) return;
@@ -103,38 +118,30 @@ async function loadSeatsForLot(lotId, currentSeatId) {
             rowLabel.textContent = row;
             map.appendChild(rowLabel);
 
-            const rowSeats = [...rows[row]].sort((a, b) =>
-                a.numer.localeCompare(b.numer)
-            );
+            rows[row]
+                .sort((a, b) => a.numer.localeCompare(b.numer))
+                .forEach((m, index) => {
+                    const seat = document.createElement('div');
+                    seat.className = `seat ${m.klasa.toLowerCase()}`;
 
-            rowSeats.forEach((m, index) => {
-                const seat = document.createElement('div');
-                seat.className = `seat ${m.klasa.toLowerCase()}`;
+                    if (m.zajete && m.id !== currentSeatId) {
+                        seat.classList.add('taken');
+                    }
 
-                // zajęte ALE obecne miejsce → nadal klikalne
-                if (m.zajete && m.id !== currentSeatId) {
-                    seat.classList.add('taken');
-                }
+                    seat.textContent = m.numer.slice(-1);
 
-                seat.textContent = m.numer.slice(-1);
+                    if (m.id === currentSeatId) {
+                        seat.classList.add('selected');
+                        selectedSeatId = m.id;
+                    }
 
-                // zaznaczenie aktualnego miejsca
-                if (m.id === currentSeatId) {
-                    seat.classList.add('selected');
-                    selectedSeatId = m.id;
-                }
+                    if (!m.zajete || m.id === currentSeatId) {
+                        seat.onclick = () => selectSeat(m.id, seat);
+                    }
 
-                if (!m.zajete || m.id === currentSeatId) {
-                    seat.onclick = () => selectSeat(m.id, seat);
-                }
-
-                map.appendChild(seat);
-
-                // 🔥 korytarz po C
-                if (index === 2) {
-                    map.appendChild(createAisle());
-                }
-            });
+                    map.appendChild(seat);
+                    if (index === 2) map.appendChild(createAisle());
+                });
         });
     };
 

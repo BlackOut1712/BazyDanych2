@@ -15,7 +15,7 @@
     </div>
 
     <!-- PRAWA STRONA: PRZYCISKI OBOK SIEBIE -->
-    <div class="actions actions-inline">
+    <div class="top-actions">
         <button type="button" class="btn-secondary" onclick="goBack()">
             ⬅ Wróć do panelu kasjera
         </button>

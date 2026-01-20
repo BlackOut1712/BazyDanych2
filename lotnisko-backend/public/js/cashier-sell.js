@@ -295,25 +295,44 @@ async function sellTicket() {
 
     const klient_id = document.getElementById('klientSelect').value;
     const miejsce_id = selectedSeatId || document.getElementById('miejsceSelect').value;
-    const cena = document.getElementById('priceInput').value;
 
     const imie_pasazera = document.getElementById('passengerFirstName').value.trim();
     const nazwisko_pasazera = document.getElementById('passengerLastName').value.trim();
     const pesel_pasazera = document.getElementById('passengerPesel').value.trim();
 
-    if (!klient_id || !miejsce_id || !cena || !imie_pasazera || !nazwisko_pasazera || !pesel_pasazera) {
+    if (!klient_id || !miejsce_id || !imie_pasazera || !nazwisko_pasazera || !pesel_pasazera) {
         document.getElementById('sellResult').innerHTML =
             `<p style="color:red">Uzupełnij wszystkie pola</p>`;
         isProcessing = false;
         return;
     }
 
+    let rezerwacja = null;
+
     try {
-        const rezerwacja = await apiFetch('/rezerwacje', {
+        // 1️⃣ PRÓBA UTWORZENIA REZERWACJI
+        rezerwacja = await apiFetch('/rezerwacje', {
             method: 'POST',
             body: JSON.stringify({ klient_id, miejsce_id })
         });
 
+    } catch (e) {
+        console.warn('Rezerwacja już istnieje – próbuję pobrać istniejącą');
+
+        // 2️⃣ JEŚLI JUŻ ISTNIEJE → POBIERZ ISTNIEJĄCĄ
+        try {
+            rezerwacja = await apiFetch(`/miejsca/${miejsce_id}/rezerwacja`);
+        } catch (err) {
+            console.error(err);
+            document.getElementById('sellResult').innerHTML =
+                `<p style="color:red">Nie można pobrać rezerwacji</p>`;
+            isProcessing = false;
+            return;
+        }
+    }
+
+    try {
+        // 3️⃣ TWORZENIE BILETU
         const bilet = await apiFetch('/bilety', {
             method: 'POST',
             body: JSON.stringify({
@@ -324,16 +343,17 @@ async function sellTicket() {
             })
         });
 
-        localStorage.setItem('blik_bilet_id', bilet.id);
-        localStorage.setItem('blik_klient_id', klient_id);
-        localStorage.setItem('blik_kwota', cena);
+        // 4️⃣ PRZEJŚCIE DO BLIK
 
+        localStorage.setItem('blik_bilet_id', bilet.id);
+        localStorage.setItem('blik_client_id', klient_id); // ✅ KLUCZOWE
         window.location.href = '/blik';
 
     } catch (e) {
         console.error(e);
         document.getElementById('sellResult').innerHTML =
-            `<p style="color:red">Błąd sprzedaży</p>`;
+            `<p style="color:red">Błąd tworzenia biletu</p>`;
+    } finally {
         isProcessing = false;
     }
 }

@@ -8,12 +8,20 @@ use Illuminate\Support\Facades\Hash;
 
 class KlientController extends Controller
 {
+    protected function requireRole(Request $request, array $roles)
+    {
+        $role = strtoupper($request->header('X-User-Role'));
+
+        if (!$role || !in_array($role, $roles)) {
+            abort(403, 'Brak uprawnień');
+        }
+    }
     // GET /api/klienci
     public function index()
     {
         return response()->json(Klient::all());
     }
-
+    
     // POST /api/klienci
     public function store(Request $request)
     {
@@ -38,4 +46,56 @@ class KlientController extends Controller
     {
         return response()->json(Klient::findOrFail($id));
     }
+    public function profile(Request $request)
+    {
+        $this->requireRole($request, ['CLIENT']);
+
+        $clientId = $request->header('X-Client-Id');
+
+        $klient = Klient::findOrFail($clientId);
+
+        return response()->json($klient);
+    }
+    public function updateProfile(Request $request)
+    {
+        $this->requireRole($request, ['CLIENT']);
+
+        $clientId = $request->header('X-Client-Id');
+
+        $request->validate([
+            'email' => 'nullable|email',
+            'numer_telefonu' => 'nullable|string|min:6',
+            'current_password' => 'nullable|string',
+            'new_password' => 'nullable|string|min:6',
+        ]);
+
+        $klient = Klient::findOrFail($clientId);
+
+        if ($request->email !== null) {
+            $klient->email = $request->email;
+        }
+
+        if ($request->numer_telefonu !== null) {
+            $klient->numer_telefonu = $request->numer_telefonu;
+        }
+
+        // 🔐 zmiana hasła (jeśli podane)
+        if ($request->current_password && $request->new_password) {
+            if (!Hash::check($request->current_password, $klient->haslo)) {
+                return response()->json([
+                    'message' => 'Aktualne hasło jest niepoprawne'
+                ], 403);
+            }
+
+            $klient->haslo = Hash::make($request->new_password);
+        }
+
+        $klient->save();
+
+        return response()->json([
+            'message' => 'Profil zaktualizowany'
+        ]);
+    }
+    
+
 }

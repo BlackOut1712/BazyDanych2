@@ -64,22 +64,61 @@
         <h3 id="formTitle">Dodaj pracownika</h3>
 
         <div class="form-grid">
+
+            <!-- ROLA – NA GÓRZE -->
+            <div class="role-field">
+                <select id="rola">
+                    <option value="KASJER">Kasjer</option>
+                    <option value="MENADZER">Menadżer</option>
+                </select>
+            </div>
+
             <input type="text" id="imie" placeholder="Imię">
             <input type="text" id="nazwisko" placeholder="Nazwisko">
-            <input type="text" id="pesel" placeholder="PESEL">
+
+            <input
+                type="text"
+                id="pesel"
+                placeholder="PESEL"
+                inputmode="numeric"
+                pattern="\d{11}"
+                maxlength="11"
+            >
             <input type="text" id="adres" placeholder="Adres">
-            <input type="text" id="telefon" placeholder="Telefon">
+
+            <input
+                type="text"
+                id="telefon"
+                placeholder="Telefon"
+                inputmode="numeric"
+                pattern="\d{9}"
+                maxlength="9"
+            >
             <input type="email" id="email" placeholder="Email">
+
+            <!-- LOGIN + HASŁO OBOK SIEBIE -->
             <input type="text" id="login" placeholder="Login">
-            <input type="password" id="haslo" placeholder="Hasło (puste = bez zmiany)">
 
-            <select id="rola">
-                <option value="KASJER">Kasjer</option>
-                <option value="MENADZER">Menadżer</option>
-            </select>
+            <div class="password-field">
+                <input
+                    type="password"
+                    id="haslo"
+                    placeholder="Hasło (puste = bez zmiany)"
+                >
 
-            
+                <div class="password-hint">
+                    Hasło musi zawierać:
+                    <ul>
+                        <li>co najmniej 6 znaków</li>
+                        <li>minimum jedną dużą literę</li>
+                        <li>minimum jedną cyfrę</li>
+                    </ul>
+                </div>
+            </div>
+
         </div>
+
+
 
         <div class="actions">
             <button class="btn-primary" onclick="saveWorker()">Zapisz</button>

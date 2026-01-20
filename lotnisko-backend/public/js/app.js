@@ -1,5 +1,8 @@
-const API_URL = 'http://127.0.0.1:8000/api';
-
+// 🔥 AUTOMATYCZNIE DZIAŁA:
+// - localhost
+// - LAN (192.168.x.x)
+// - ngrok
+const API_URL = window.location.origin + '/api';
 
 /* ===============================
    API FETCH – WERSJA ODPORNA
@@ -9,31 +12,26 @@ async function apiFetch(endpoint, options = {}) {
 
     const headers = {
         'Content-Type': 'application/json',
+        'Accept': 'application/json', // ✅ KLUCZOWE – JSON ZAMIAST HTML
         ...(options.headers || {})
     };
 
     /* ===============================
        🔐 ROLA UŻYTKOWNIKA
-       ✅ BACKEND: DUŻE LITERY
-       ✅ KOMPATYBILNOŚĆ: ZOSTAWIAMY RAW
     ================================ */
     if (role) {
-        // 🔥 KLUCZOWE – backend (Laravel)
         headers['X-User-Role'] = role.toUpperCase();
-
-        // 🔧 OPCJONALNE – kompatybilność wstecz
         headers['X-User-Role-Raw'] = role;
     }
 
     /* ===============================
-       👤 ID KLIENTA (DO HISTORII / MOJE)
-       🔥 NIC NIE USUWAMY
+       👤 ID KLIENTA
     ================================ */
     const userRaw = getSessionItem('user');
     if (userRaw) {
         try {
             const user = JSON.parse(userRaw);
-            if (user && user.id) {
+            if (user?.id && !headers['X-Client-Id']) {
                 headers['X-Client-Id'] = user.id;
             }
         } catch (e) {
@@ -43,50 +41,38 @@ async function apiFetch(endpoint, options = {}) {
 
     const method = options.method || 'GET';
 
-    console.log('[apiFetch]', API_URL + endpoint, method, headers);
+    console.log('[apiFetch]', API_URL + endpoint, method);
 
     let response;
-
     try {
         response = await fetch(API_URL + endpoint, {
-            method: method,
-            headers: headers,
-            body: options.body ?? undefined, // 🔥 bezpieczne
+            method,
+            headers,
+            body: options.body ?? undefined,
+
+            // 🔥🔥🔥 KLUCZOWE DODATKI – NIE USUWAĆ
             mode: 'cors',
-            credentials: 'omit'
+            credentials: 'include' // ✅ SESJE / LOGOWANIE LARAVEL
         });
-    } catch (networkError) {
-        console.error('Błąd sieci / CORS:', networkError);
-        throw new Error('Brak połączenia z serwerem API');
+    } catch (e) {
+        console.error('Błąd sieci / CORS:', e);
+        throw new Error('Brak połączenia z API');
     }
 
     if (!response.ok) {
-        let errorData = null;
-
+        let error;
         try {
-            errorData = await response.json();
-        } catch (e) {
-            throw new Error(
-                `Błąd serwera (${response.status}) dla ${endpoint}`
-            );
+            error = await response.json();
+        } catch {
+            throw new Error(`Błąd serwera (${response.status})`);
         }
-
-        console.error('API error:', errorData);
-        throw errorData;
+        throw error;
     }
 
-    // 🔥 NIE każda poprawna odpowiedź MUSI mieć body (np. DELETE)
-    const contentLength = response.headers.get('content-length');
+    // DELETE / 204
+    if (response.status === 204) return null;
 
-    if (contentLength === '0' || response.status === 204) {
-        return null;
-    }
-
-    try {
-        return await response.json();
-    } catch (e) {
-        throw new Error('Niepoprawna odpowiedź JSON z API');
-    }
+    return response.json();
 }
 
 /* ===============================

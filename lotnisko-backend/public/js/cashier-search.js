@@ -2,6 +2,17 @@ document.addEventListener('DOMContentLoaded', () => {
     searchFlights(); // opcjonalnie: pokaż wszystkie loty na start
 });
 
+/* ===============================
+   NORMALIZACJA DATY (DODANE)
+================================ */
+function normalizeDate(dateString) {
+    if (!dateString) return 0;
+
+    // obsługa: YYYY-MM-DD oraz YYYY-MM-DDTHH:mm:ss
+    const dateOnly = dateString.split('T')[0];
+    return new Date(dateOnly).getTime();
+}
+
 async function searchFlights() {
     const container =
         document.getElementById('resultsBody') ||
@@ -21,21 +32,28 @@ async function searchFlights() {
     try {
         const flights = await apiFetch('/loty');
 
-        const filtered = flights.filter(flight => {
-            const flightDate = flight.data?.split('T')[0] || '';
+        const filtered = flights
+            .filter(flight => {
+                const flightDate = flight.data?.split('T')[0] || '';
 
-            const cityFrom =
-                flight.trasa?.lotnisko_wylotu?.miasto?.toLowerCase() || '';
+                const cityFrom =
+                    flight.trasa?.lotnisko_wylotu?.miasto?.toLowerCase() || '';
 
-            const cityTo =
-                flight.trasa?.lotnisko_przylotu?.miasto?.toLowerCase() || '';
+                const cityTo =
+                    flight.trasa?.lotnisko_przylotu?.miasto?.toLowerCase() || '';
 
-            return (
-                (date ? flightDate === date : true) &&
-                (from ? cityFrom.includes(from) : true) &&
-                (to ? cityTo.includes(to) : true)
-            );
-        });
+                return (
+                    (date ? flightDate === date : true) &&
+                    (from ? cityFrom.includes(from) : true) &&
+                    (to ? cityTo.includes(to) : true)
+                );
+            })
+            /* ===============================
+               SORTOWANIE PO DACIE (DODANE)
+            ================================ */
+            .sort((a, b) => {
+                return normalizeDate(a.data) - normalizeDate(b.data);
+            });
 
         if (!filtered.length) {
             container.innerHTML =
@@ -59,7 +77,7 @@ async function searchFlights() {
                 arrivalTime = `${(parseInt(h) + 2) % 24}:${m}`;
             }
 
-            // WIDOK TABELI (CLIENT)
+            // WIDOK TABELI (CLIENT / CASHIER)
             if (container.tagName === 'TBODY') {
                 const row = document.createElement('tr');
                 row.innerHTML = `

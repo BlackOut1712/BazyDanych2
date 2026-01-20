@@ -35,4 +35,9 @@ class Rezerwacja extends Model
     {
         return $this->belongsTo(Pracownik::class);
     }
+    public function lot()
+    {
+        return $this->belongsTo(Lot::class);
+    }
+
 }

@@ -1,8 +1,8 @@
-
 function payBlik() {
     const code = document.getElementById('blikCode').value.trim();
     const result = document.getElementById('blikResult');
 
+    // ✅ Walidacja kodu BLIK
     if (!/^\d{6}$/.test(code)) {
         result.innerHTML =
             `<p style="color:red">Kod BLIK musi mieć 6 cyfr</p>`;
@@ -14,83 +14,61 @@ function payBlik() {
     // ⏳ SYMULACJA BANKU
     setTimeout(async () => {
 
-        result.innerHTML =
-            `<p style="color:green">✔ Płatność BLIK zaakceptowana</p>`;
+        const role = getSessionItem('role');
 
-        // 🔐 odświeżenie aktywności sesji
+        try {
+            /* ======================================
+               🔥 KASJER → OPŁATA ISTNIEJĄCEGO BILETU
+            ====================================== */
+            if (role === 'KASJER') {
+
+                const biletId  = localStorage.getItem('blik_bilet_id');
+                const clientId = localStorage.getItem('blik_client_id');
+
+                // ❗ Twarda walidacja
+                if (!biletId) {
+                    alert('Brak biletu do opłacenia');
+                    window.location.href = '/cashier/dashboard';
+                    return;
+                }
+
+                if (!clientId) {
+                    alert('Brak klienta do płatności');
+                    window.location.href = '/cashier/dashboard';
+                    return;
+                }
+
+                // 🔥 KLUCZ: ręcznie NADPISUJEMY klienta
+                await apiFetch(`/bilety/${biletId}/pay`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Client-Id': clientId   // 👈 WYGRYWA z apiFetch
+                    }
+                });
+
+                // 🧹 sprzątanie po sukcesie
+                localStorage.removeItem('blik_bilet_id');
+                localStorage.removeItem('blik_client_id');
+
+                result.innerHTML =
+                    `<p style="color:green">✔ Bilet opłacony poprawnie</p>`;
+            }
+
+        } catch (e) {
+            console.error('Błąd płatności BLIK:', e);
+            result.innerHTML =
+                `<p style="color:red">❌ Błąd płatności</p>`;
+            return;
+        }
+
+        // 🔐 odświeżenie sesji
         if (typeof updateActivity === 'function') {
             updateActivity();
         }
 
-        const role = getSessionItem('role');
-
-        /* =====================================================
-           🔥 KLIENT → TWORZENIE BILETU
-        ====================================================== */
-        if (role === 'CLIENT') {
-
-            const rezerwacjaId =
-                localStorage.getItem('rezerwacja_id') ||
-                localStorage.getItem('blik_rezerwacja_id');
-
-            if (!rezerwacjaId) {
-                alert('Błąd: brak rezerwacji do opłacenia');
-                window.location.href = '/client/dashboard';
-                return;
-            }
-
-            // 🔥 NOWE – dane pasażera
-            const userRaw = getSessionItem('user');
-            let user = null;
-
-            try {
-                user = userRaw ? JSON.parse(userRaw) : null;
-            } catch (e) {}
-
-            const imie_pasazera =
-                localStorage.getItem('passengerFirstName') ||
-                user?.imie ||
-                '';
-
-            const nazwisko_pasazera =
-                localStorage.getItem('passengerLastName') ||
-                user?.nazwisko ||
-                '';
-
-            const pesel_pasazera =
-                localStorage.getItem('passengerPesel') ||
-                user?.pesel ||
-                '';
-
-            try {
-                await apiFetch('/bilety/kup', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        rezerwacja_id: rezerwacjaId,
-                        imie_pasazera,
-                        nazwisko_pasazera,
-                        pesel_pasazera
-                    })
-                });
-
-                // 🧹 sprzątanie
-                localStorage.removeItem('rezerwacja_id');
-                localStorage.removeItem('blik_rezerwacja_id');
-
-            } catch (e) {
-                console.error('Błąd tworzenia biletu:', e);
-                alert('Płatność OK, ale błąd zapisu biletu');
-                return;
-            }
-        }
-
-        /* =====================================================
-           ⏩ PRZEKIEROWANIE
-        ====================================================== */
+        // ⏩ przekierowanie
         setTimeout(() => {
-            if (role === 'CLIENT') {
-                window.location.href = '/client/dashboard';
-            } else if (role === 'KASJER') {
+            if (role === 'KASJER') {
                 window.location.href = '/cashier/dashboard';
             } else {
                 window.location.href = '/';

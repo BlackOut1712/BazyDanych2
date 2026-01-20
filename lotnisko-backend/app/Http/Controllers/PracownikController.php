@@ -50,7 +50,14 @@ class PracownikController extends Controller
             'email' => 'required|email|unique:pracowniks,email',
 
             'login' => 'required|string|max:50|unique:pracowniks,login',
-            'haslo' => 'required|string|min:6',
+            'haslo' => [
+                'required',
+                'string',
+                'min:6',
+                'regex:/[A-Z]/', // co najmniej 1 duża litera
+                'regex:/[0-9]/', // co najmniej 1 cyfra
+            ],
+
 
             'rola' => 'required|in:KASJER,MENADZER',
         ]);
@@ -71,6 +78,15 @@ class PracownikController extends Controller
 
         $p = Pracownik::findOrFail($id);
 
+        // 🔒 BLOKADA GŁÓWNEGO ADMINA
+        if ($p->login === 'admin') {
+            return response()->json([
+                'message' => 'Nie można modyfikować głównego administratora'
+            ], 403);
+        }
+
+       
+
         $data = $request->validate([
             'imie' => 'sometimes|string|max:50',
             'nazwisko' => 'sometimes|string|max:50',
@@ -81,7 +97,14 @@ class PracownikController extends Controller
             'login' => 'sometimes|string|max:50|unique:pracowniks,login,' . $p->id,
 
             'rola' => 'sometimes|in:KASJER,MENADZER',
-            'haslo' => 'nullable|string|min:6',
+            'haslo' => [
+                'sometimes',
+                'string',
+                'min:6',
+                'regex:/[A-Z]/', // co najmniej 1 duża litera
+                'regex:/[0-9]/', // co najmniej 1 cyfra
+            ],
+
         ]);
 
         if (!empty($data['haslo'])) {
@@ -105,6 +128,13 @@ class PracownikController extends Controller
 
         $p = Pracownik::findOrFail($id);
 
+        // 🔒 BLOKADA GŁÓWNEGO ADMINA
+        if ($p->login === 'admin') {
+            return response()->json([
+                'message' => 'Nie można zablokować głównego administratora'
+            ], 403);
+        }
+
         $p->status = !$p->status;
         $p->save();
 
@@ -115,4 +145,6 @@ class PracownikController extends Controller
             'status' => (bool) $p->status
         ]);
     }
+    
+
 }

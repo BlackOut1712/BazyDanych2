@@ -12,6 +12,9 @@
         <a href="/dashboard">Lotnisko</a>
     </div>
     <div class="top-actions">
+        <button class="btn-secondary" onclick="goBack()">
+            ← Wróć do panelu menadżera
+        </button>
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
     </div>
 </header>
@@ -29,13 +32,14 @@
                         <th>Trasa</th>
                         <th>Data</th>
                         <th>Godzina</th>
+                        <th>Ceny</th>
                         <th>Status</th>
                         <th style="width:120px; text-align:center;">Akcje</th>
                     </tr>
                 </thead>
                 <tbody id="flightsBody">
                     <tr>
-                        <td colspan="5" class="table-loading">Ładowanie...</td>
+                        <td colspan="6" class="table-loading">Ładowanie...</td>
                     </tr>
                 </tbody>
             </table>
@@ -43,7 +47,7 @@
 
         <div class="actions">
             <button class="btn-primary" onclick="addFlight()">+ Dodaj lot</button>
-            <button class="btn-secondary" onclick="goBack()">Wróć</button>
+            
         </div>
     </section>
 
@@ -69,7 +73,6 @@
 
             <select id="status">
                 <option value="AKTYWNY">Aktywny</option>
-                <option value="PLANOWANY">Planowany</option>
                 <option value="NIEAKTYWNY">Nieaktywny</option>
             </select>
 

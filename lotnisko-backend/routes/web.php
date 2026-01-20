@@ -94,6 +94,9 @@ Route::prefix('admin')->group(function () {
 
       // ✅ ZWROT (KLIENT)
       Route::view('/refund', 'client.refund')->name('client.refund');
+      Route::get('/profile', function () {
+         return view('client.profile');
+      });
 
    
     /* =========================

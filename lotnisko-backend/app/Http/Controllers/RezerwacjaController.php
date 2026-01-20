@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Miejsce;
 use App\Models\Rezerwacja;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -154,52 +155,54 @@ class RezerwacjaController extends Controller
         ->orderByDesc('data_rezerwacji')
         ->get();
     }
-    public function zmienMiejsce(Request $request)
-    {
-        $this->requireRole($request, ['KASJER','CLIENT', 'MENADZER']);
+    public function zmienMiejsceKlient(Request $request)
+{
+    $this->requireRole($request, ['CLIENT']);
 
-        $validated = $request->validate([
-            'rezerwacja_id'   => 'required|exists:rezerwacjes,id',
-            'nowe_miejsce_id' => 'required|exists:miejscas,id',
+    $data = $request->validate([
+        'rezerwacja_id'    => 'required|exists:rezerwacjes,id',
+        'nowe_miejsce_id'  => 'required|exists:miejscas,id',
+    ]);
+
+    $clientId = $request->header('X-Client-Id');
+    if (!$clientId) {
+        abort(401, 'Brak identyfikatora klienta');
+    }
+
+    return DB::transaction(function () use ($data, $clientId) {
+
+        $rezerwacja = Rezerwacja::with('miejsce')
+            ->lockForUpdate()
+            ->findOrFail($data['rezerwacja_id']);
+
+        // 🔐 bezpieczeństwo
+        if ((int)$rezerwacja->klient_id !== (int)$clientId) {
+            abort(403, 'To nie jest Twoja rezerwacja');
+        }
+
+        if ($rezerwacja->status !== 'POTWIERDZONA') {
+            abort(409, 'Tylko potwierdzona rezerwacja może zmienić miejsce');
+        }
+
+        // 🔓 zwalniamy stare miejsce
+        $rezerwacja->miejsce->update(['zajete' => false]);
+
+        // 🔒 zajmujemy nowe
+        $noweMiejsce = Miejsce::lockForUpdate()->findOrFail($data['nowe_miejsce_id']);
+        if ($noweMiejsce->zajete) {
+            abort(409, 'Miejsce jest już zajęte');
+        }
+
+        $noweMiejsce->update(['zajete' => true]);
+
+        $rezerwacja->update([
+            'miejsce_id' => $noweMiejsce->id
         ]);
 
-        return DB::transaction(function () use ($validated) {
-
-            $rezerwacja = Rezerwacja::with('miejsce')->findOrFail(
-                $validated['rezerwacja_id']
-            );
-
-            // jeżeli to samo miejsce
-            if ($rezerwacja->miejsce_id == $validated['nowe_miejsce_id']) {
-                return response()->json([
-                    'message' => 'Wybrano to samo miejsce'
-                ], 409);
-            }
-
-            // sprawdzenie czy nowe miejsce nie jest zajęte
-            $zajete = Rezerwacja::where('miejsce_id', $validated['nowe_miejsce_id'])
-                ->whereIn('status', ['OCZEKUJE', 'POTWIERDZONA'])
-                ->where(function ($q) {
-                    $q->whereNull('wygasa_o')
-                    ->orWhere('wygasa_o', '>', now());
-                })
-                ->exists();
-
-            if ($zajete) {
-                throw ValidationException::withMessages([
-                    'nowe_miejsce_id' => 'To miejsce jest już zajęte',
-                ]);
-            }
-
-            // zmiana miejsca
-            $rezerwacja->update([
-                'miejsce_id' => $validated['nowe_miejsce_id']
-            ]);
-
-            return response()->json([
-                'message' => 'Miejsce zmienione poprawnie'
-            ]);
-        });
-    }
+        return response()->json([
+            'message' => 'Miejsce zmienione poprawnie'
+        ]);
+    });
+}
 
 }

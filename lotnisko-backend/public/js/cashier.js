@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const body = document.getElementById('reservationsBody');
     if (!body) {
-        console.error('Brak elementu #reservationsBody');
+        
         return;
     }
 

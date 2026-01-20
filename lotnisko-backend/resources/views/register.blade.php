@@ -42,8 +42,27 @@
             inputmode="numeric"
             oninput="this.value = this.value.replace(/[^0-9]/g, '')"
         >
-        <input type="password" id="pin" placeholder="6-cyfrowy PIN">
-        <input type="password" id="pin2" placeholder="Powtórz 6-cyfrowy PIN">
+        <input
+            type="password"
+            id="pin"
+            inputmode="numeric"
+            pattern="\d{6}"
+            minlength="6"
+            maxlength="6"
+            placeholder="6-cyfrowy PIN"
+            required
+        >
+
+        <input
+            type="password"
+            id="pin2"
+            inputmode="numeric"
+            pattern="\d{6}"
+            minlength="6"
+            maxlength="6"
+            placeholder="Powtórz 6-cyfrowy PIN"
+            required
+        >
 
         <label class="remember">
             <input type="checkbox" id="terms">

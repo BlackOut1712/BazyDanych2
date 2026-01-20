@@ -2,8 +2,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dostęp tylko MENADZER
     checkSession(['MENADZER']);
     loadWorkers();
+    allowOnlyDigits('pesel', 11);
+    allowOnlyDigits('telefon', 9);
 });
 
+// login głównego admina – NIETYKALNY
+const PROTECTED_LOGIN = 'admin';
+function isValidWorkerPassword(password) {
+    if (!password) return true; // puste = bez zmiany
+
+    const minLength = password.length >= 6;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasDigit = /\d/.test(password);
+
+    return minLength && hasUppercase && hasDigit;
+}
 /* ============================
    LISTA PRACOWNIKÓW
 ============================ */
@@ -26,6 +39,7 @@ async function loadWorkers() {
         }
 
         workers.forEach(w => {
+            const isProtected = w.login === PROTECTED_LOGIN;
             const tr = document.createElement('tr');
 
             tr.innerHTML = `
@@ -43,12 +57,18 @@ async function loadWorkers() {
                     </span>
                 </td>
                 <td class="actions">
-                    <button class="icon-btn" onclick="editWorker(${w.id})">✏️</button>
-                    <button class="icon-btn danger"
-                        onclick="toggleWorker(${w.id})"
-                        title="${w.status ? 'Zablokuj' : 'Odblokuj'}">
-                        ${w.status ? '🔒' : '🔓'}
-                    </button>
+                    ${
+                        isProtected
+                            ? `<span style="opacity:.5">—</span>`
+                            : `
+                                <button class="icon-btn" onclick="editWorker(${w.id})">✏️</button>
+                                <button class="icon-btn danger"
+                                    onclick="toggleWorker(${w.id})"
+                                    title="${w.status ? 'Zablokuj' : 'Odblokuj'}">
+                                    ${w.status ? '🔒' : '🔓'}
+                                </button>
+                              `
+                    }
                 </td>
             `;
 
@@ -65,6 +85,14 @@ async function loadWorkers() {
    ZMIANA STATUSU
 ============================ */
 async function toggleWorker(id) {
+    const worker = await getWorkerById(id);
+    if (!worker) return;
+
+    if (worker.login === PROTECTED_LOGIN) {
+        alert('Nie można zablokować głównego administratora');
+        return;
+    }
+
     if (!confirm('Czy na pewno zmienić status pracownika?')) return;
 
     try {
@@ -84,43 +112,41 @@ async function toggleWorker(id) {
    EDYCJA PRACOWNIKA
 ============================ */
 async function editWorker(id) {
-    try {
-        const workers = await apiFetch('/pracownicy');
-        const w = workers.find(p => p.id === id);
-        if (!w) return;
+    const w = await getWorkerById(id);
+    if (!w) return;
 
-        document.getElementById('formTitle').innerText = 'Edytuj pracownika';
-
-        imie.value = w.imie;
-        nazwisko.value = w.nazwisko;
-        pesel.value = w.pesel;
-        adres.value = w.adres;
-        telefon.value = w.telefon;
-        email.value = w.email;
-        login.value = w.login;
-        rola.value = w.rola;
-        haslo.value = '';
-
-        pesel.disabled = true;
-
-        let idField = document.getElementById('workerId');
-        if (!idField) {
-            idField = document.createElement('input');
-            idField.type = 'hidden';
-            idField.id = 'workerId';
-            document.body.appendChild(idField);
-        }
-        idField.value = w.id;
-
-        window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-        });
-
-    } catch (e) {
-        console.error(e);
-        alert('Błąd wczytywania danych pracownika');
+    if (w.login === PROTECTED_LOGIN) {
+        alert('Nie można edytować głównego administratora');
+        return;
     }
+
+    document.getElementById('formTitle').innerText = 'Edytuj pracownika';
+
+    imie.value = w.imie;
+    nazwisko.value = w.nazwisko;
+    pesel.value = w.pesel;
+    adres.value = w.adres;
+    telefon.value = w.telefon;
+    email.value = w.email;
+    login.value = w.login;
+    rola.value = w.rola;
+    haslo.value = '';
+
+    pesel.disabled = true;
+
+    let idField = document.getElementById('workerId');
+    if (!idField) {
+        idField = document.createElement('input');
+        idField.type = 'hidden';
+        idField.id = 'workerId';
+        document.body.appendChild(idField);
+    }
+    idField.value = w.id;
+
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+    });
 }
 
 /* ============================
@@ -129,7 +155,6 @@ async function editWorker(id) {
 async function saveWorker() {
     const id = document.getElementById('workerId')?.value || null;
     const result = document.getElementById('formResult');
-
     if (!result) return;
 
     const data = {
@@ -142,19 +167,36 @@ async function saveWorker() {
         rola: rola.value
     };
 
-    if (haslo.value.trim()) {
-        data.haslo = haslo.value;
+    const password = haslo.value.trim();
+
+    if (password) {
+        if (!isValidWorkerPassword(password)) {
+            alert(
+                'Hasło pracownika musi:\n' +
+                '- mieć minimum 6 znaków\n' +
+                '- zawierać co najmniej 1 dużą literę\n' +
+                '- zawierać co najmniej 1 cyfrę'
+            );
+            return;
+        }
+
+        data.haslo = password;
     }
+
 
     try {
         if (id) {
-            // EDYCJA
+            const worker = await getWorkerById(Number(id));
+            if (worker?.login === PROTECTED_LOGIN) {
+                alert('Nie można zapisać zmian głównego administratora');
+                return;
+            }
+
             await apiFetch(`/pracownicy/${id}`, {
                 method: 'PUT',
                 body: JSON.stringify(data)
             });
         } else {
-            // DODAWANIE
             if (!data.haslo) {
                 alert('Hasło jest wymagane przy dodawaniu pracownika');
                 return;
@@ -168,15 +210,25 @@ async function saveWorker() {
             });
         }
 
-        result.innerHTML =
-            `<p style="color:green">✔ Zapisano poprawnie</p>`;
+        result.innerHTML = `<p style="color:green">✔ Zapisano poprawnie</p>`;
         resetForm();
         loadWorkers();
 
     } catch (e) {
         console.error(e);
-        result.innerHTML =
-            `<p style="color:red">Błąd zapisu</p>`;
+        result.innerHTML = `<p style="color:red">Błąd zapisu</p>`;
+    }
+}
+
+/* ============================
+   POMOCNICZE
+============================ */
+async function getWorkerById(id) {
+    try {
+        const workers = await apiFetch('/pracownicy');
+        return workers.find(w => w.id === id) || null;
+    } catch {
+        return null;
     }
 }
 
@@ -202,6 +254,21 @@ function resetForm() {
    POWRÓT
 ============================ */
 function goBack() {
-    // 🔴 Laravel route, NIE html
     window.location.href = '/admin/dashboard';
 }
+/* ============================
+   🔒 WALIDACJA PESEL / TELEFON
+============================ */
+
+function allowOnlyDigits(id, maxLength) {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.addEventListener('input', () => {
+        input.value = input.value
+            .replace(/\D/g, '')       // tylko cyfry
+            .slice(0, maxLength);     // limit długości
+    });
+}
+
+

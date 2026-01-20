@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const phoneInput = document.getElementById('phoneNumber');
 
-    // telefon zostaje TYLKO wizualnie (jeśli chcesz), backend go nie używa
     if (!phoneInput) return;
 
     phoneInput.addEventListener('input', () => {
@@ -17,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-async function refundBlik() {
-    const pinInput = document.getElementById('blikCode'); // pole na PIN
+async function refundBlikCashier() {
+    const pinInput = document.getElementById('clientPin');
     const result = document.getElementById('refundResult');
 
     if (!pinInput || !result) {
@@ -28,29 +27,24 @@ async function refundBlik() {
 
     const pin = pinInput.value.trim();
 
-    // =========================
-    // WALIDACJA
-    // =========================
-    if (!/^\d{6}$/.test(pin)) {
-        result.innerHTML =
-            `<p style="color:red">PIN musi mieć dokładnie 6 cyfr</p>`;
+    if (pin.length < 6) {
+        result.innerHTML = `<p style="color:red">PIN musi mieć min. 6 cyfr</p>`;
         return;
     }
 
     const biletId = localStorage.getItem('refund_bilet_id');
     if (!biletId) {
         alert('Brak biletu do zwrotu');
-        window.location.href = '/client/tickets';
+        window.location.href = '/cashier/menagment';
         return;
     }
 
     result.innerHTML = `<p>⏳ Przetwarzanie zwrotu...</p>`;
 
     try {
-        await apiFetch('/client/bilety/zwrot', {
+        await apiFetch(`/bilety/zwrot/${biletId}`, {
             method: 'POST',
             body: JSON.stringify({
-                bilet_id: biletId,
                 pin: pin
             })
         });
@@ -61,12 +55,12 @@ async function refundBlik() {
         localStorage.removeItem('refund_bilet_id');
 
         setTimeout(() => {
-            window.location.href = '/client/tickets';
+            window.location.href = '/cashier/menagment';
         }, 1200);
 
     } catch (e) {
         console.error(e);
         result.innerHTML =
-            `<p style="color:red">❌ Nieprawidłowy PIN</p>`;
+            `<p style="color:red">❌ Nieprawidłowy PIN klienta</p>`;
     }
 }

@@ -23,4 +23,5 @@ class Klient extends Model
     protected $hidden = [
         'haslo',
     ];
+    
 }

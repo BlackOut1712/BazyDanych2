@@ -168,7 +168,7 @@ async function confirmSeatChange() {
     }
 
     try {
-        await apiFetch('/rezerwacje/zmien-miejsce', {
+        await apiFetch('/client/rezerwacje/zmien-miejsce', {
             method: 'POST',
             body: JSON.stringify({
                 rezerwacja_id: currentReservationId,

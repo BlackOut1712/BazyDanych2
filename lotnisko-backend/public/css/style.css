@@ -533,7 +533,6 @@ body {
 
 .actions {
     margin-top: 30px;
-    display: flex;
     gap: 15px;
 }
 
@@ -754,8 +753,8 @@ body {
 
 /* === IKONY AKCJI === */
 
-.employees-table td.actions {
-    display: flex;
+.employees-table td.table-actions {
+    
     justify-content: center;
     align-items: center;
     gap: 12px;              /* odstęp między ikonami */
@@ -2235,4 +2234,231 @@ body {
 /* odstęp nagłówka tabeli */
 .stats-page h3 {
     margin-bottom: 20px;
+}
+/* ===== PRACOWNICY – AKCJE ===== */
+.workers-page .employees-table td.actions,
+.workers-page .employees-table th:last-child {
+    text-align: center;
+    vertical-align: middle;
+}
+.workers-page .employees-table td.actions {
+    
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.workers-page .icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.workers-page .icon-btn:hover {
+    background: #f3f4f6;
+    transform: translateY(-1px);
+}
+.workers-page .icon-btn.danger {
+    border-color: #fca5a5;
+}
+
+.workers-page .icon-btn.danger:hover {
+    background: #fee2e2;
+}
+.workers-page .employees-table tr:has(td code:contains("admin")) {
+    opacity: 0.85;
+}
+.workers-page .employees-table td.actions span {
+    font-size: 18px;
+    color: #9ca3af;
+}
+.workers-page .icon-btn {
+    display: inline-block;
+    line-height: 1;
+}
+.workers-page .employees-table td.actions {
+    line-height: 0;
+}
+/* ============================
+   STATYSTYKI – FILTR OKRESU
+============================ */
+
+.stats-filter {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 10px;
+}
+
+.stats-filter label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+}
+
+.stats-filter select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    padding: 10px 38px 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #d0d7e2;
+
+    font-size: 14px;
+    font-weight: 600;
+    color: #0066FF;
+    background-color: #fff;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'%3E%3Cpath fill='%230066FF' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.stats-filter select:hover {
+    border-color: #0066FF;
+}
+
+.stats-filter select:focus {
+    outline: none;
+    border-color: #0066FF;
+    box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
+}
+.profile-container {
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+.profile-card {
+    background: #fff;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.profile-card h3 {
+    margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.btn-primary {
+    background: #0066ff;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background: #e53935;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+/* ===============================
+   PROFIL – UKŁAD DWUKOLUMNOWY
+================================ */
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: start;
+    margin-top: 30px;
+}
+
+/* responsywność */
+@media (max-width: 900px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* =========================
+   WORKERS – NOWY UKŁAD FORM
+========================= */
+
+.workers-page .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+}
+
+/* wszystkie inputy równe */
+.workers-page .form-grid > input {
+    width: 100%;
+}
+
+/* ROLA NA CAŁĄ SZEROKOŚĆ */
+.workers-page .role-field {
+    grid-column: 1 / -1;
+}
+
+.workers-page .role-field select {
+    width: 100%;
+    height: 42px;
+}
+
+/* HASŁO – JEDNA KOMÓRKA GRIDU */
+.workers-page .password-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.workers-page .password-field input {
+    width: 100%;
+}
+
+/* WSKAZÓWKI POD HASŁEM */
+.workers-page .password-hint {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #6b7280;
+    text-align: left
+}
+
+.workers-page .password-hint ul {
+    margin: 4px 0 0 18px;
+    padding: 0;
+    text-align: left
+}
+
+.workers-page .password-hint li {
+    line-height: 1.4;
+    text-align: left
+}
+.workers-page .form-grid {
+    align-items: start;
 }

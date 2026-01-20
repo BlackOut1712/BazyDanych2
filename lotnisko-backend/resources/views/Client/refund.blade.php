@@ -39,10 +39,10 @@
         />
 
         <input
-            type="text"
+            type="password"
             id="blikCode"
             class="blik-input"
-            placeholder="Kod BLIK (6 cyfr)"
+            placeholder="Pin"
             maxlength="6"
             inputmode="numeric"
             autocomplete="one-time-code"

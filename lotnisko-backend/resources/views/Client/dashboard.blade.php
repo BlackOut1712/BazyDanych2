@@ -18,6 +18,9 @@
 
     <div class="top-actions">
         <span class="role-label">Klient</span>
+        <button class="btn-secondary" onclick="goToProfile()">
+            Mój profil
+        </button>
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
     </div>
 </header>

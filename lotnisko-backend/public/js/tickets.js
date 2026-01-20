@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 🔐 tylko klient
     checkSession(['CLIENT']);
-
+    
     const user = getUser();
     if (!user) {
         alert('Sesja wygasła');
@@ -81,10 +81,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             const przylot = trasa?.lotnisko_przylotu?.miasto ?? '—';
 
             let dataTekst = '—';
+
             if (lot?.data) {
-                const d = lot.data.split('-');
-                const time = lot.godzina ? lot.godzina.slice(0, 5) : '';
-                dataTekst = `${d[2]}.${d[1]}.${d[0]} ${time}`.trim();
+                let date;
+
+                // ✅ jeśli backend zwrócił pełne ISO (z T)
+                if (lot.data.includes('T')) {
+                    date = new Date(lot.data);
+                }
+                // ✅ jeśli data + osobna godzina
+                else if (lot.godzina) {
+                    date = new Date(`${lot.data}T${lot.godzina}`);
+                }
+
+                if (date && !isNaN(date)) {
+                    dataTekst = date.toLocaleString('pl-PL', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
             }
 
             const tr = document.createElement('tr');

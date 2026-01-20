@@ -41,7 +41,7 @@ class Lot extends Model
     {
         return $this->hasMany(Miejsce::class);
     }
-
+    
     public function rezerwacje()
     {
         return $this->hasManyThrough(

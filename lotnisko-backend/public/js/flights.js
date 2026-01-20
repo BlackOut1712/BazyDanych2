@@ -54,14 +54,14 @@ async function loadFlights() {
     if (!body) return;
 
     body.innerHTML =
-        `<tr><td colspan="5" class="table-loading">Ładowanie...</td></tr>`;
+        `<tr><td colspan="6" class="table-loading">Ładowanie...</td></tr>`;
 
     try {
         const flights = await apiFetch('/loty');
 
         if (!flights || flights.length === 0) {
             body.innerHTML =
-                `<tr><td colspan="5">Brak lotów</td></tr>`;
+                `<tr><td colspan="6">Brak lotów</td></tr>`;
             return;
         }
 
@@ -71,11 +71,31 @@ async function loadFlights() {
             const from = f.trasa?.lotnisko_wylotu?.miasto ?? '?';
             const to = f.trasa?.lotnisko_przylotu?.miasto ?? '?';
 
+            const ecoPrice = Array.isArray(f.ceny)
+                ? f.ceny.find(c => c.klasa === 'ECONOMY')?.cena
+                : null;
+
+            const busPrice = Array.isArray(f.ceny)
+                ? f.ceny.find(c => c.klasa === 'BUSINESS')?.cena
+                : null;
+
             html += `
                 <tr>
                     <td>${from} → ${to}</td>
                     <td>${formatDatePL(f.data)}</td>
                     <td>${f.godzina ?? ''}</td>
+
+                    <td>
+                        ${
+                            ecoPrice && busPrice
+                                ? `
+                                    <div>Eco: <b>${ecoPrice} zł</b></div>
+                                    <div>Biz: <b>${busPrice} zł</b></div>
+                                  `
+                                : '—'
+                        }
+                    </td>
+
                     <td>
                         <span class="role-badge ${
                             f.status === 'AKTYWNY'
@@ -85,6 +105,7 @@ async function loadFlights() {
                             ${f.status}
                         </span>
                     </td>
+
                     <td class="actions">
                         <button class="icon-btn"
                             onclick="editFlight(${f.id})">✏️</button>
@@ -100,7 +121,7 @@ async function loadFlights() {
     } catch (e) {
         console.error('Błąd ładowania lotów:', e);
         body.innerHTML =
-            `<tr><td colspan="5">Błąd pobierania lotów</td></tr>`;
+            `<tr><td colspan="6">Błąd pobierania lotów</td></tr>`;
     }
 }
 
@@ -136,6 +157,7 @@ function addFlight() {
 
     showFlightForm();
 }
+
 /* ============================
    ZAPIS LOTU (ADD + EDIT)
 ============================ */
@@ -154,7 +176,7 @@ async function saveFlight() {
         cena_business = Number(parts[1]);
     }
 
-    // 🔥 WYMAGAJ CEN TYLKO PRZY DODAWANIU NOWEGO LOTU
+    // wymagaj cen tylko przy dodawaniu
     if (
         !isEditMode &&
         (
@@ -174,7 +196,6 @@ async function saveFlight() {
         trasa_id: await prepareRoute()
     };
 
-    // 🔥 CENY – wysyłaj tylko jeśli są poprawnie ustawione
     if (
         cena_economy !== null &&
         cena_business !== null &&
@@ -241,21 +262,16 @@ async function editFlight(id) {
     document.getElementById('samolotSelect').value = f.samolot_id;
     document.getElementById('samolotSelect').disabled = true;
 
-    /* 🔥 USTAWIENIE ZAKRESU CEN PRZY EDYCJI (JEŚLI ISTNIEJĄ) */
     if (Array.isArray(f.ceny)) {
         const eco = f.ceny.find(c => c.klasa === 'ECONOMY')?.cena;
         const bus = f.ceny.find(c => c.klasa === 'BUSINESS')?.cena;
-        if (
-            eco !== undefined &&
-            bus !== undefined
-        ) {
+        if (eco !== undefined && bus !== undefined) {
             document.getElementById('priceRange').value = `${eco}|${bus}`;
         }
     }
 
     showFlightForm();
 }
-
 
 /* ============================
    USUWANIE LOTU

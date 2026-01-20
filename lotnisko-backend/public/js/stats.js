@@ -12,7 +12,6 @@ async function loadStats() {
     const period = periodSelect ? periodSelect.value : 'month';
 
     try {
-        // 🔹 pobieramy wszystko równolegle (bez crasha)
         const results = await Promise.allSettled([
             apiFetch('/loty'),
             apiFetch('/rezerwacje'),
@@ -20,12 +19,14 @@ async function loadStats() {
             apiFetch('/platnosci')
         ]);
 
-        const loty        = results[0].status === 'fulfilled' ? results[0].value : [];
-        const rezerwacje  = results[1].status === 'fulfilled' ? results[1].value : [];
-        const bilety      = results[2].status === 'fulfilled' ? results[2].value : [];
-        const platnosci   = results[3].status === 'fulfilled' ? results[3].value : [];
+        const loty       = results[0].status === 'fulfilled' ? results[0].value : [];
+        const rezerwacje = results[1].status === 'fulfilled' ? results[1].value : [];
+        const bilety     = results[2].status === 'fulfilled' ? results[2].value : [];
+        const platnosci  = results[3].status === 'fulfilled' ? results[3].value : [];
 
         const fromDate = getFromDate(period);
+
+        /* ===== FILTROWANIE ===== */
 
         const filteredFlights = loty.filter(l =>
             l.data && isAfter(l.data, fromDate)
@@ -36,22 +37,23 @@ async function loadStats() {
         );
 
         const filteredTickets = bilety.filter(b =>
-            // różne statusy z backendu
-            ['OPLACONY', 'Opłacony', 'POTWIERDZONY'].includes(b.status) &&
             b.created_at &&
-            isAfter(b.created_at, fromDate)
+            isAfter(b.created_at, fromDate) &&
+            ['OPLACONY', 'Opłacony', 'POTWIERDZONY'].includes(b.status)
         );
 
         const filteredPayments = platnosci.filter(p =>
             p.created_at && isAfter(p.created_at, fromDate)
         );
 
-        // 🔹 liczby
+        /* ===== LICZBY ===== */
+
         setText('statFlights', filteredFlights.length);
         setText('statReservations', filteredReservations.length);
         setText('statTickets', filteredTickets.length);
 
-        // 🔹 przychód
+        /* ===== PRZYCHÓD ===== */
+
         const revenue = filteredPayments.reduce(
             (sum, p) => sum + Number(p.kwota || 0),
             0
@@ -62,6 +64,8 @@ async function loadStats() {
             revenue.toLocaleString('pl-PL') + ' zł'
         );
 
+        /* ===== NAJPOPULARNIEJSZE TRASY ===== */
+
         renderPopularFlights(filteredTickets);
 
     } catch (e) {
@@ -71,7 +75,7 @@ async function loadStats() {
 }
 
 /* ============================
-   NAJPOPULARNIEJSZE LOTY
+   NAJPOPULARNIEJSZE TRASY
 ============================ */
 function renderPopularFlights(bilety) {
     const body = document.getElementById('popularFlightsBody');
@@ -82,10 +86,12 @@ function renderPopularFlights(bilety) {
     const counter = {};
 
     bilety.forEach(b => {
+        if (b.status !== 'OPLACONY') return;
+
         const from =
-            b.rezerwacja?.lot?.trasa?.lotnisko_wylotu?.miasto;
+            b.rezerwacja?.miejsce?.lot?.trasa?.lotnisko_wylotu?.miasto;
         const to =
-            b.rezerwacja?.lot?.trasa?.lotnisko_przylotu?.miasto;
+            b.rezerwacja?.miejsce?.lot?.trasa?.lotnisko_przylotu?.miasto;
 
         if (!from || !to) return;
 
@@ -98,14 +104,16 @@ function renderPopularFlights(bilety) {
         .slice(0, 5);
 
     if (!sorted.length) {
-        body.innerHTML =
-            `<tr><td colspan="2">Brak danych</td></tr>`;
+        body.innerHTML = `<tr><td colspan="2">Brak danych</td></tr>`;
         return;
     }
 
     sorted.forEach(([route, count]) => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${route}</td><td>${count}</td>`;
+        tr.innerHTML = `
+            <td>${route}</td>
+            <td style="text-align:center;">${count}</td>
+        `;
         body.appendChild(tr);
     });
 }
@@ -116,17 +124,9 @@ function renderPopularFlights(bilety) {
 function getFromDate(period) {
     const d = new Date();
 
-    if (period === 'day') {
-        d.setDate(d.getDate() - 1);
-    }
-
-    if (period === 'week') {
-        d.setDate(d.getDate() - 7);
-    }
-
-    if (period === 'month') {
-        d.setDate(d.getDate() - 30);
-    }
+    if (period === 'day') d.setDate(d.getDate() - 1);
+    if (period === 'week') d.setDate(d.getDate() - 7);
+    if (period === 'month') d.setDate(d.getDate() - 30);
 
     d.setHours(0, 0, 0, 0);
     return d;

@@ -25,8 +25,16 @@
     <div class="logo">
         <a href="/client/dashboard">Lotnisko</a>
     </div>
-
-    <div class="actions">
+    
+    <div class="top-actions">
+        <span class="role-label">Klient</span>
+        <button
+            type="button"
+            class="btn-secondary"
+            onclick="goBack()"
+        >
+            ⬅ Wróć do panelu klienta
+        </button>
         <button
             type="button"
             class="btn-secondary"
@@ -79,13 +87,7 @@
              POWRÓT
         ========================== -->
         <div class="actions">
-            <button
-                type="button"
-                class="btn-secondary"
-                onclick="goBack()"
-            >
-                ⬅ Wróć do panelu klienta
-            </button>
+            
         </div>
 
     </section>

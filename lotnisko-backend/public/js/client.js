@@ -21,3 +21,6 @@ function goToHistory() {
 function goToSearch() {
     window.location.href = '/client/search';
 }
+function goToProfile() {
+    window.location.href = '/client/profile';
+}

@@ -2,87 +2,67 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Zwrot biletu</title>
+    <title>Zwrot BLIK – Kasjer</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="/css/style.css">
 
     <!-- SESJA -->
     <script src="/js/session.js"></script>
     <script>
-        checkSession(['KASJER', 'MENADZER']);
+        checkSession(['KASJER']);
     </script>
 </head>
-<body>
 
-<!-- TOP BAR -->
-<header class="top-bar">
-    <div class="logo">Lotnisko</div>
-    <div class="actions">
-        <button class="btn-secondary" onclick="logout()">Wyloguj</button>
+<body class="refund-page">
+
+<div class="blik-container">
+
+    <div class="blik-card">
+
+        <h3 class="blik-title">Zwrot środków (BLIK)</h3>
+
+        <p class="blik-subtitle">
+            Podaj numer telefonu klienta oraz PIN klienta
+        </p>
+
+        <input
+            type="text"
+            id="phoneNumber"
+            class="phone-input"
+            placeholder="Numer telefonu klienta"
+            inputmode="numeric"
+            maxlength="11"
+        />
+
+        <input
+            type="password"
+            id="clientPin"
+            class="blik-input"
+            placeholder="PIN klienta (6 cyfry)"
+            maxlength="6"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+        />
+
+        <button
+            class="btn-primary blik-btn"
+            onclick="refundBlikCashier()"
+        >
+            💸 Wykonaj zwrot
+        </button>
+
+        <div id="refundResult" class="blik-result"></div>
+
     </div>
-</header>
 
-<!-- CONTENT -->
-<main class="container">
+</div>
 
-    <section class="card">
-        <h2>Zwrot biletu</h2>
-
-        <!-- INFORMACJA -->
-        <div class="info-box">
-            <p>
-                Wprowadź numer biletu oraz PIN klienta, aby wykonać zwrot.
-                Zwrot możliwy jest tylko dla biletów opłaconych.
-            </p>
-        </div>
-
-        <!-- FORMULARZ -->
-        <div class="form-grid">
-
-            <div class="form-group">
-                <label for="numerBiletu">Numer biletu</label>
-                <input
-                    type="text"
-                    id="numerBiletu"
-                    placeholder="np. AB12CD34"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="pin">PIN klienta</label>
-                <input
-                    type="password"
-                    id="pin"
-                    placeholder="PIN klienta"
-                >
-            </div>
-
-        </div>
-
-        <!-- AKCJE -->
-        <div class="actions">
-            <button class="btn-danger" onclick="refund()">
-                🔄 Wykonaj zwrot
-            </button>
-
-            <button class="btn-secondary" onclick="goBack()">
-                ⬅ Wróć
-            </button>
-        </div>
-
-        
-        <div id="refundResult" class="form-result"></div>
-    </section>
-
-</main>
-
+<!-- JS -->
 <script src="/js/app.js"></script>
-<script src="/js/refund.js"></script>
-
-<script>
-    function goBack() {
-        window.location.href = '/cashier/dashboard';
-    }
-</script>
+<script src="/js/refund-cashier.js"></script>
 
 </body>
 </html>

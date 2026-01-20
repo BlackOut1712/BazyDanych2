@@ -8,8 +8,12 @@
 <body class="stats-page">
 
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
-    <div class="actions">
+    <div class="logo">
+        <a href="/admin/dashboard">Lotnisko</a>
+    </div>
+
+    <!-- 🔥 POPRAWIONE PRZYCISKI -->
+    <div class="top-actions">
         <button class="btn-secondary" onclick="goBack()">
             ← Wróć do panelu menadżera
         </button>
@@ -19,20 +23,21 @@
 
 <main class="container">
 
+    <!-- ===== FILTR OKRESU ===== -->
     <section class="card">
         <h2>Statystyki</h2>
 
-        <div class="actions">
+        <div class="stats-filter">
+            <label for="periodSelect">Zakres danych</label>
             <select id="periodSelect" onchange="loadStats()">
                 <option value="day">Dzisiaj</option>
                 <option value="week">Ostatnie 7 dni</option>
                 <option value="month">Ostatnie 30 dni</option>
             </select>
-
-            
         </div>
     </section>
 
+    <!-- ===== KAFLE STATYSTYK ===== -->
     <section class="stats-grid">
         <div class="card stat-card">
             <h3>Liczba lotów</h3>
@@ -55,6 +60,7 @@
         </div>
     </section>
 
+    <!-- ===== NAJPOPULARNIEJSZE TRASY ===== -->
     <section class="card">
         <h3>Najpopularniejsze trasy</h3>
 

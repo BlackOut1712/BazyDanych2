@@ -22,7 +22,7 @@
 <header class="top-bar">
     <div class="logo">Lotnisko</div>
 
-    <div class="actions">
+    <div class="top-actions">
         <button type="button" class="btn-secondary" onclick="goBack()">
             ⬅ Wróć do panelu kasjera
         </button>

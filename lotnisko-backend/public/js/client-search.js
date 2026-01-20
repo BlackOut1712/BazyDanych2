@@ -1,43 +1,56 @@
 document.addEventListener('DOMContentLoaded', () => {
-    searchFlights();
+    searchFlights(); // opcjonalnie: pokaż wszystkie loty na start
 });
 
 /* ===============================
-   WYSZUKIWANIE LOTÓW
+   NORMALIZACJA DATY (DODANE)
 ================================ */
+function normalizeDate(dateString) {
+    if (!dateString) return 0;
+    return new Date(dateString.split('T')[0]).getTime();
+}
+
 async function searchFlights() {
-    const container = document.getElementById('flights-container');
+    const container =
+        document.getElementById('resultsBody') ||
+        document.getElementById('flights-container');
 
     if (!container) {
-        console.error("Błąd: Nie znaleziono <div id='flights-container'>");
+        console.error('Brak kontenera wyników');
         return;
     }
 
-    container.innerHTML =
-        '<div style="text-align:center; padding:20px;">Ładowanie...</div>';
+    container.innerHTML = '';
 
-    const dateInput = document.getElementById('date')?.value || '';
-    const fromInput = document.getElementById('from')?.value.toLowerCase() || '';
-    const toInput = document.getElementById('to')?.value.toLowerCase() || '';
+    const date = document.getElementById('date')?.value || '';
+    const from = document.getElementById('from')?.value.toLowerCase() || '';
+    const to = document.getElementById('to')?.value.toLowerCase() || '';
 
     try {
         const flights = await apiFetch('/loty');
 
-        const filtered = flights.filter(flight => {
-            const flightDate = flight.data?.split('T')[0] || '';
+        const filtered = flights
+            .filter(flight => {
+                const flightDate = flight.data?.split('T')[0] || '';
 
-            const cityFrom =
-                flight.trasa?.lotnisko_wylotu?.miasto?.toLowerCase() || '';
-            const cityTo =
-                flight.trasa?.lotnisko_przylotu?.miasto?.toLowerCase() || '';
+                const cityFrom =
+                    flight.trasa?.lotnisko_wylotu?.miasto?.toLowerCase() || '';
 
-            return (
-                (dateInput ? flightDate === dateInput : true) &&
-                (fromInput ? cityFrom.includes(fromInput) : true) &&
-                (toInput ? cityTo.includes(toInput) : true)
-            );
-        });
+                const cityTo =
+                    flight.trasa?.lotnisko_przylotu?.miasto?.toLowerCase() || '';
 
+                return (
+                    (date ? flightDate === date : true) &&
+                    (from ? cityFrom.includes(from) : true) &&
+                    (to ? cityTo.includes(to) : true)
+                );
+            })
+            /* ===============================
+               SORTOWANIE PO DACIE (DODANE)
+            ================================ */
+            .sort((a, b) => {
+                return normalizeDate(a.data) - normalizeDate(b.data);
+            });
         container.innerHTML = '';
 
         if (!filtered.length) {
