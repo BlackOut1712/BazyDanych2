@@ -1,9 +1,8 @@
 /* ============================
    API URL (fallback)
 ============================ */
-if (typeof API_URL === 'undefined') {
-    var API_URL = 'http://127.0.0.1:8000/api';
-}
+const API_URL = window.location.origin + '/api';
+
 
 /* ============================
    WALIDATORY
@@ -26,65 +25,97 @@ function isValidPhone(phone) {
    REJESTRACJA KLIENTA
 ============================ */
 async function register() {
-    const imie = document.getElementById('imie').value.trim();
-    const nazwisko = document.getElementById('nazwisko').value.trim();
-    const pesel = document.getElementById('pesel').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const telefon = document.getElementById('telefon').value.trim();
-    const pin = document.getElementById('pin').value.trim();
-    const pin2 = document.getElementById('pin2').value.trim();
-    const terms = document.getElementById('terms').checked;
+    try {
+        const imie = document.getElementById('imie').value.trim();
+        const nazwisko = document.getElementById('nazwisko').value.trim();
+        const pesel = document.getElementById('pesel').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const telefon = document.getElementById('telefon').value.trim();
+        const pin = document.getElementById('pin').value.trim();
+        const pin2 = document.getElementById('pin2').value.trim();
+        const terms = document.getElementById('terms').checked;
 
-    if (!imie || !nazwisko || !pesel || !email || !telefon || !pin || !pin2) {
-        alert('Uzupełnij wszystkie pola');
-        return;
+        if (!imie || !nazwisko || !pesel || !email || !telefon || !pin || !pin2) {
+            alert('Uzupełnij wszystkie pola');
+            return;
+        }
+
+        if (!isValidPesel(pesel)) {
+            alert('PESEL musi składać się z 11 cyfr');
+            return;
+        }
+
+        if (!isValidPhone(telefon)) {
+            alert('Numer telefonu musi składać się z 9 cyfr');
+            return;
+        }
+
+        if (!isValidPin(pin)) {
+            alert('PIN musi składać się z dokładnie 6 cyfr');
+            return;
+        }
+
+        if (pin !== pin2) {
+            alert('PIN-y nie są takie same');
+            return;
+        }
+
+        if (!terms) {
+            alert('Musisz zaakceptować regulamin');
+            return;
+        }
+
+        /* ============================
+           REJESTRACJA
+        ============================ */
+        const registerResponse = await fetch(`${API_URL}/klienci`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                imie,
+                nazwisko,
+                pesel,
+                numer_telefonu: telefon,
+                email,
+                haslo: pin
+            })
+        });
+
+        const registerData = await registerResponse.json();
+
+        if (!registerResponse.ok) {
+            alert(registerData?.message || 'Błąd rejestracji');
+            return;
+        }
+
+        /* ============================
+           AUTO-LOGIN
+        ============================ */
+        const loginResponse = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email,
+                haslo: pin
+            })
+        });
+
+        const loginData = await loginResponse.json();
+
+        if (!loginResponse.ok) {
+            alert('Konto utworzone, ale nie udało się zalogować');
+            window.location.href = '/login';
+            return;
+        }
+
+        localStorage.setItem('token', loginData.token);
+        localStorage.setItem('userRole', 'KLIENT');
+
+        window.location.href = '/client/dashboard';
+
+    } catch (error) {
+        console.error(error);
+        alert('Błąd połączenia z serwerem');
     }
-
-    if (!isValidPesel(pesel)) {
-        alert('PESEL musi składać się z 11 cyfr');
-        return;
-    }
-
-    if (!isValidPhone(telefon)) {
-        alert('Numer telefonu musi składać się z 9 cyfr');
-        return;
-    }
-
-    if (!isValidPin(pin)) {
-        alert('PIN musi składać się z dokładnie 6 cyfr');
-        return;
-    }
-
-    if (pin !== pin2) {
-        alert('PIN-y nie są takie same');
-        return;
-    }
-
-    if (!terms) {
-        alert('Musisz zaakceptować regulamin');
-        return;
-    }
-
-    const response = await fetch(`${API_URL}/klienci`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            imie,
-            nazwisko,
-            pesel,
-            numer_telefonu: telefon,
-            email,
-            haslo: pin
-        })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        alert(data?.message || 'Błąd rejestracji');
-        return;
-    }
-
-    alert('✔ Konto utworzone! Możesz się zalogować.');
-    window.location.href = '/login';
 }
+
