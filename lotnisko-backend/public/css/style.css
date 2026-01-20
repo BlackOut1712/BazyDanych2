@@ -2462,3 +2462,9 @@ body {
 .workers-page .form-grid {
     align-items: start;
 }
+.loty .card {
+    margin-bottom: 40px; /* lub np. 40px */
+}
+.samoloty .card {
+    margin-bottom: 40px; /* lub np. 40px */
+}

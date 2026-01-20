@@ -5,7 +5,7 @@
     <title>Loty</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
+<body class="loty">
 
 <header class="top-bar">
     <div class="logo">
