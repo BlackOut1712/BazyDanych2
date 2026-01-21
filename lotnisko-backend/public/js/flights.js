@@ -202,12 +202,11 @@ async function saveFlight() {
         const samoloty = await apiFetch('/samoloty');
         const samolot = samoloty.find(s => s.id === samolotId);
 
-        if (!samolot || samolot.status !== 'AKTYWNY') {
+        if (!samolot || !samolot.status) {
             alert('Nie można dodać lotu – wybrany samolot jest nieaktywny');
             return;
         }
     }
-
     const payload = {
         data: document.getElementById('data').value,
         godzina: document.getElementById('godzina').value,
