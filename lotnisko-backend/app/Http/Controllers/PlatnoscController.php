@@ -103,62 +103,70 @@ public function zwrotKasjerski(Request $request, $id)
         'pin' => 'required|string|min:6',
     ]);
 
-    try {
-        return DB::transaction(function () use ($request, $id) {
+    return DB::transaction(function () use ($request, $id) {
 
-            $bilet = Bilet::with('rezerwacja')
-                ->lockForUpdate()
-                ->findOrFail($id);
+        $bilet = Bilet::with('rezerwacja')
+            ->lockForUpdate()
+            ->findOrFail($id);
 
-            if ($bilet->status !== 'OPLACONY') {
-                throw ValidationException::withMessages([
-                    'bilet' => 'Bilet nie jest opłacony lub był już zwrócony'
-                ]);
-            }
+        if ($bilet->status !== 'OPLACONY') {
+            abort(409, 'Bilet nie jest opłacony lub był już zwrócony');
+        }
 
-            $rezerwacja = $bilet->rezerwacja;
+        $rezerwacja = $bilet->rezerwacja;
 
-            if (!$rezerwacja || !$rezerwacja->klient_id) {
-                throw ValidationException::withMessages([
-                    'klient' => 'Brak klienta przypisanego do biletu'
-                ]);
-            }
+        if (!$rezerwacja || !$rezerwacja->klient_id) {
+            abort(404, 'Brak klienta przypisanego do biletu');
+        }
 
-            $klient = Klient::findOrFail($rezerwacja->klient_id);
+        $klient = Klient::findOrFail($rezerwacja->klient_id);
 
-            // 🔐 PIN = HASŁO KLIENTA
-            if (!Hash::check($request->pin, $klient->haslo)) {
-                abort(403, 'Nieprawidłowy PIN klienta');
-            }
+        
+        if (!Hash::check($request->pin, $klient->haslo)) {
+            abort(403, 'Nieprawidłowy PIN klienta');
+        }
 
-            Platnosc::create([
-                'kwota'     => -350,
-                'metoda'    => 'GOTOWKA',
-                'status'    => 'ZWROT',
-                'data_platnosci' => now(),   // ⬅⬅⬅ BRAKUJĄCE POLE
-                'bilet_id'  => $bilet->id,
-                'klient_id' => $klient->id,
+        
+        $platnosc = Platnosc::where('bilet_id', $bilet->id)
+            ->lockForUpdate()
+            ->orderByDesc('created_at')
+            ->firstOrFail();
+
+        
+        Platnosc::create([
+            'kwota'          => -abs($platnosc->kwota),
+            'metoda'         => 'BLIK',          
+            'data_platnosci' => now(),
+            'bilet_id'       => $bilet->id,
+            'klient_id'      => $klient->id,
+        ]);
+
+        
+        if ($rezerwacja->miejsce) {
+            $rezerwacja->miejsce->update([
+                'zajete' => false
             ]);
+        }
 
-            $bilet->update(['status' => 'ZWROCONY']);
-            $rezerwacja->update(['status' => 'ANULOWANA']);
+        // 🎟️ STATUS BILETU
+        $bilet->update(['status' => 'ZWROCONY']);
 
-            return response()->json([
-                'message' => 'Zwrot wykonany poprawnie',
-                'bilet_id' => $bilet->id,
-            ]);
-        });
-    } catch (\Throwable $e) {
+        // ❌ USUWAMY REZERWACJĘ (KLUCZ!)
+        $rezerwacja->delete();
+
         return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
-    }
+            'message'  => 'Zwrot wykonany poprawnie',
+            'bilet_id' => $bilet->id,
+            'kwota'    => $platnosc->kwota,
+        ]);
+    });
 }
 
 
 
 
-    //Lista Platnosci
+
+    
     public function index()
     {
         return response()->json(

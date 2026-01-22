@@ -18,14 +18,10 @@ class Lot extends Model
         'data' => 'date',
     ];
 
-    /* =========================
-       🔥 DODANE – APPENDS
-    ========================= */
+
     protected $appends = ['cena'];
 
-    /* =========================
-       RELACJE PODSTAWOWE
-    ========================= */
+
 
     public function trasa()
     {
@@ -54,9 +50,7 @@ class Lot extends Model
         );
     }
 
-    /* =========================
-       ➕ CENY LOTU
-    ========================= */
+
 
     public function ceny()
     {
@@ -75,9 +69,7 @@ class Lot extends Model
             ->where('klasa', 'BUSINESS');
     }
 
-    /* =========================
-       GETTERY
-    ========================= */
+
 
     public function getCenaEconomyAttribute()
     {
@@ -89,19 +81,16 @@ class Lot extends Model
         return $this->cenaBusiness?->cena;
     }
 
-    /* =========================
-       🔥 NAJWAŻNIEJSZE – BRAKUJĄCY ACCESSOR
-       używany przez LotController
-    ========================= */
+
 
     public function getCenaAttribute()
     {
-        // jeżeli relacja nie została załadowana
+
         if (!$this->relationLoaded('ceny')) {
             return null;
         }
 
-        // najniższa cena (do list, "od xxx zł")
+
         return $this->ceny->min('cena');
     }
 }

@@ -9,7 +9,9 @@
 
 <!-- GÓRNY PASEK -->
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/cashier/dashboard">Lotnisko</a>
+    </div>
 
     <!-- PRAWA STRONA -->
     <div class="top-actions">
@@ -26,7 +28,7 @@
         <p>Sprzedaż biletów, zarządzanie biletami oraz Wyszukiwarka lotów</p>
     </section>
 
-    <!-- ⬇️ WIĘCEJ ODDECHU -->
+    
     <section class="card-grid cashier-actions">
 
         <div class="card action-card" onclick="goToSell()">

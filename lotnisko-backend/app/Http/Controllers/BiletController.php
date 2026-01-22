@@ -9,13 +9,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Miejsce;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Klient;
 class BiletController extends Controller
 {
-    // =============================
-    // AUTORYZACJA RÓL
-    // =============================
+
     private function requireRole(Request $request, array $roles): void
     {
         $role = strtoupper($request->header('X-User-Role'));
@@ -29,9 +28,7 @@ class BiletController extends Controller
         }
     }
 
-    // =============================
-    // SPRZEDAŻ BILETU (KASJER / MENADŻER)
-    // =============================
+    
     public function store(Request $request)
     {
         $this->requireRole($request, ['KASJER', 'MENADZER']);
@@ -68,7 +65,7 @@ class BiletController extends Controller
                 'miejsce_id'        => $miejsce->id,
                 'lot_id'            => $miejsce->lot_id,
                 'data_wystawienia'  => now()->toDateString(),
-                'status'            => 'NOWY',
+                'status' => 'NOWY',
             ]);
 
             $rezerwacja->update([
@@ -79,14 +76,11 @@ class BiletController extends Controller
         });
     }
 
-    // =============================
-    // 🔥 ZAKUP BILETU PRZEZ KLIENTA (BLIK)
-    // =============================
+
     public function storeClient(Request $request)
 {
     $this->requireRole($request, ['CLIENT']);
 
-    // 🔹 WALIDACJA – pola pasażera NIE MUSZĄ być wymagane
     $data = $request->validate([
         'rezerwacja_id'     => 'required|exists:rezerwacjes,id',
         'imie_pasazera'     => 'nullable|string|max:100',
@@ -95,7 +89,6 @@ class BiletController extends Controller
     ]);
 
     $klientId = $request->header('X-Client-Id');
-
     if (!$klientId) {
         abort(401, 'Brak identyfikatora klienta');
     }
@@ -106,41 +99,34 @@ class BiletController extends Controller
             ->lockForUpdate()
             ->findOrFail($data['rezerwacja_id']);
 
-        // 🔧 BEZPIECZEŃSTWO: rezerwacja musi należeć do klienta
-        if ($rezerwacja->klient_id && $rezerwacja->klient_id != $klientId) {
+        if ($rezerwacja->klient_id && (int)$rezerwacja->klient_id !== (int)$klientId) {
             abort(403, 'Ta rezerwacja nie należy do zalogowanego klienta');
         }
 
-        // 🔧 jeżeli klient kupuje → przypisujemy klient_id (jeśli brak)
         if (!$rezerwacja->klient_id) {
             $rezerwacja->update([
                 'klient_id' => $klientId
             ]);
         }
 
-        if ($rezerwacja->status !== 'OCZEKUJE') {
-            abort(409, 'Rezerwacja została już obsłużona');
+        
+        if (!in_array($rezerwacja->status, ['OCZEKUJE', 'POTWIERDZONA'])) {
+            abort(409, 'Rezerwacja nieaktywna');
         }
 
-        if (!$rezerwacja->miejsce) {
-            abort(500, 'Rezerwacja nie ma przypisanego miejsca');
+        if (!$rezerwacja->miejsce || !$rezerwacja->klient) {
+            abort(500, 'Niekompletne dane rezerwacji');
         }
 
-        if (!$rezerwacja->klient) {
-            abort(500, 'Brak danych klienta do wystawienia biletu');
-        }
-
-        $klient = $rezerwacja->klient;
+        $klient  = $rezerwacja->klient;
         $miejsce = $rezerwacja->miejsce;
 
-        // 🔥 KLUCZOWA LOGIKA:
-        // jeśli pole puste → bierzemy z konta klienta
         $imie     = $data['imie_pasazera']     ?: $klient->imie;
         $nazwisko = $data['nazwisko_pasazera'] ?: $klient->nazwisko;
         $pesel    = $data['pesel_pasazera']    ?: $klient->pesel;
 
         if (!$imie || !$nazwisko || !$pesel) {
-            abort(422, 'Brak danych pasażera (formularz + konto klienta)');
+            abort(422, 'Brak danych pasażera');
         }
 
         $bilet = Bilet::create([
@@ -149,12 +135,13 @@ class BiletController extends Controller
             'nazwisko_pasazera' => $nazwisko,
             'pesel_pasazera'    => $pesel,
 
-            'rezerwacja_id'    => $rezerwacja->id,
-            'miejsce_id'       => $miejsce->id,
-            'lot_id'           => $miejsce->lot_id,
+            'rezerwacja_id'     => $rezerwacja->id,
+            'miejsce_id'        => $miejsce->id,
+            'lot_id'            => $miejsce->lot_id,
 
-            'data_wystawienia' => now()->toDateString(),
-            'status'           => 'OPLACONY',
+            'data_wystawienia'  => now()->toDateString(),
+            
+            'status'            => 'NOWY',
         ]);
 
         $rezerwacja->update([
@@ -165,81 +152,92 @@ class BiletController extends Controller
     });
 }
 
-    // =============================
-    // ZWROT BILETU (KASJER / MENADŻER)
-    // =============================
 
+  
 
     public function refund(Request $request)
-{
-    $this->requireRole($request, ['KASJER', 'MENADZER', 'CLIENT']);
+    {
+        $this->requireRole($request, ['KASJER', 'MENADZER', 'CLIENT']);
 
-    $data = $request->validate([
-        'numer_biletu' => 'required|string|exists:bilets,numer_biletu',
-        'pin'          => 'required|string|min:6',
-    ]);
-
-    return DB::transaction(function () use ($data, $request) {
-
-        $bilet = Bilet::with('rezerwacja')
-            ->lockForUpdate()
-            ->where('numer_biletu', $data['numer_biletu'])
-            ->firstOrFail();
-
-        if ($bilet->status !== 'OPLACONY') {
-            abort(409, 'Tylko opłacony bilet może zostać zwrócony');
-        }
-
-        $role = strtoupper($request->header('X-User-Role'));
-        $headerClientId = $request->header('X-Client-Id');
-
-        // 🔐 CLIENT → tylko własny bilet
-        if ($role === 'CLIENT') {
-            if (!$headerClientId) {
-                abort(401, 'Brak identyfikatora klienta');
-            }
-
-            if ($bilet->rezerwacja->klient_id != $headerClientId) {
-                abort(403, 'Nie możesz zwrócić cudzego biletu');
-            }
-        }
-
-        $klient = Klient::find($bilet->rezerwacja->klient_id);
-
-        if (!$klient) {
-            abort(404, 'Nie znaleziono klienta dla biletu');
-        }
-
-        // 🔑 PIN = HASŁO KLIENTA
-        if (!Hash::check($data['pin'], $klient->haslo)) {
-            abort(403, 'Nieprawidłowy PIN klienta');
-        }
-
-        Platnosc::create([
-            'kwota'     => -350,
-            'metoda'    => 'GOTOWKA',
-            'status'    => 'ZWROT',
-            'bilet_id'  => $bilet->id,
-            'klient_id' => $klient->id,
+        $data = $request->validate([
+            'numer_biletu' => 'required|string|exists:bilets,numer_biletu',
+            'pin'          => 'required|string|min:6',
         ]);
 
-        $bilet->update(['status' => 'ZWRÓCONY']);
-        $bilet->rezerwacja->update(['status' => 'ANULOWANA']);
+        return DB::transaction(function () use ($data, $request) {
 
-        return response()->json([
-            'message'      => 'Zwrot biletu wykonany poprawnie',
-            'numer_biletu' => $bilet->numer_biletu,
-        ]);
-    });
-}
+            $bilet = Bilet::with('rezerwacja')
+                ->lockForUpdate()
+                ->where('numer_biletu', $data['numer_biletu'])
+                ->firstOrFail();
+
+            if ($bilet->status !== 'OPLACONY') {
+                abort(409, 'Tylko opłacony bilet może zostać zwrócony');
+            }
+
+            $role = strtoupper($request->header('X-User-Role'));
+            $headerClientId = $request->header('X-Client-Id');
+
+            
+            if ($role === 'CLIENT') {
+                if (!$headerClientId) {
+                    abort(401, 'Brak identyfikatora klienta');
+                }
+
+                if ((int)$bilet->rezerwacja->klient_id !== (int)$headerClientId) {
+                    abort(403, 'Nie możesz zwrócić cudzego biletu');
+                }
+            }
+
+            $klient = Klient::findOrFail($bilet->rezerwacja->klient_id);
+
+            if (!Hash::check($data['pin'], $klient->haslo)) {
+                abort(403, 'Nieprawidłowy PIN klienta');
+            }
+
+            
+            $platnosc = Platnosc::where('bilet_id', $bilet->id)
+                ->lockForUpdate()
+                ->orderByDesc('created_at')
+                ->firstOrFail();
+
+            Platnosc::create([
+                'kwota'          => -abs($platnosc->kwota),
+                'metoda'         => 'BLIK',          
+                'data_platnosci' => now(),
+                'bilet_id'       => $bilet->id,
+                'klient_id'      => $klient->id,
+            ]);
+
+        
+            if ($bilet->rezerwacja->miejsce) {
+                $bilet->rezerwacja->miejsce->update([
+                    'zajete' => false
+                ]);
+            }
+
+            
+            $bilet->update(['status' => 'ZWROCONY']);
+
+            
+            $bilet->rezerwacja->delete();
+            return response()->json([
+                'message'      => 'Zwrot biletu wykonany poprawnie',
+                'numer_biletu' => $bilet->numer_biletu,
+                'kwota'        => $platnosc->kwota,
+            ]);
+        });
+    }
 
 
 
 
 
-    // =============================
-    // LISTA BILETÓW (PRACOWNICY)
-    // =============================
+
+
+
+
+
     public function index(Request $request)
     {
         $this->requireRole($request, ['KASJER', 'MENADZER']);
@@ -253,9 +251,7 @@ class BiletController extends Controller
         ])->get();
     }
 
-    // =============================
-    // BILETY KLIENTA (HISTORIA)
-    // =============================
+
     public function moje(Request $request)
     {
         $this->requireRole($request, ['CLIENT']);
@@ -282,9 +278,7 @@ class BiletController extends Controller
     }
 
 
-    // =============================
-    // FAKTURA
-    // =============================
+
 public function faktura(Request $request, $id)
 {
     $this->requireRole($request, ['KASJER', 'MENADZER']);
@@ -299,12 +293,12 @@ public function faktura(Request $request, $id)
         abort(409, 'Faktura dostępna tylko dla opłaconych biletów');
     }
 
-    // ===== POWIĄZANIA =====
+    
     $rezerwacja = $bilet->rezerwacja;
     $lot = $rezerwacja?->miejsce?->lot;
     $trasa = $lot?->trasa;
 
-    // ===== ✅ POPRAWNA KWOTA Z PŁATNOŚCI =====
+    
     $platnosc = Platnosc::where('bilet_id', $bilet->id)
         ->orderByDesc('data_platnosci')
         ->first();
@@ -315,7 +309,7 @@ public function faktura(Request $request, $id)
 
     $kwota = $platnosc->kwota;
 
-    // ===== PDF =====
+    
     $pdf = Pdf::loadView('pdf.faktura', [
         'numer_faktury' => 'FV/' . now()->format('Ymd') . '/' . $bilet->id,
         'data'          => now()->toDateString(),
@@ -325,7 +319,7 @@ public function faktura(Request $request, $id)
         'lot'           => $lot,
         'trasa'         => $trasa,
 
-        // 💰 REALNA ZAPŁACONA KWOTA
+        
         'kwota'         => $kwota
     ]);
 
@@ -344,9 +338,7 @@ public function faktura(Request $request, $id)
         return $this->faktura($request, $id);
     }
 
-    // =============================
-    // CREATE AFTER PAYMENT (ZOSTAJE)
-    // =============================
+   
     public function createAfterPayment(Request $request)
     {
         $this->requireRole($request, ['CLIENT']);
@@ -429,7 +421,7 @@ public function faktura(Request $request, $id)
                 'rezerwacja.miejsce.lot.ceny'
             ])->lockForUpdate()->findOrFail($id);
 
-            // 🔐 bezpieczeństwo – bilet musi należeć do klienta
+            
             if ($bilet->rezerwacja->klient_id != $klientId) {
                 abort(403, 'To nie jest bilet tego klienta');
             }
@@ -445,9 +437,7 @@ public function faktura(Request $request, $id)
                 abort(500, 'Brak danych miejsca lub lotu');
             }
 
-            // =========================
-            // 🔥 WYLICZENIE CENY Z BAZY
-            // =========================
+
             $kwota = null;
 
             if ($lot->ceny && $lot->ceny->count()) {
@@ -461,14 +451,32 @@ public function faktura(Request $request, $id)
                 }
             }
 
-            // 🧯 FALLBACK – SYSTEM NIGDY NIE PADA
+            
             if ($kwota === null) {
-                $kwota = 350;
+                abort(409, 'Brak ceny w bazie dla klasy miejsca');
             }
 
-            // =========================
-            // 💰 ZAPIS PŁATNOŚCI
-            // =========================
+
+            $kwota = null;
+
+            if ($lot->ceny && $lot->ceny->count()) {
+
+                $klasa = strtoupper(trim($miejsce->klasa));
+
+                $cena = $lot->ceny->firstWhere('klasa', $klasa);
+
+                if ($cena && $cena->cena !== null) {
+                    $kwota = $cena->cena;
+                }
+            }
+
+
+            if ($kwota === null) {
+                abort(409, 'Brak ceny w bazie dla klasy miejsca');
+            }
+
+
+
             Platnosc::create([
                 'kwota'          => $kwota,
                 'metoda'         => 'BLIK',
@@ -478,9 +486,7 @@ public function faktura(Request $request, $id)
                 'klient_id'      => $klientId,
             ]);
 
-            // =========================
-            // 🎟️ AKTUALIZACJE
-            // =========================
+
             $bilet->update([
                 'status' => 'OPLACONY'
             ]);
@@ -513,7 +519,7 @@ public function faktura(Request $request, $id)
                 abort(401, 'Brak identyfikatora klienta');
             }
 
-            $bilet = Bilet::with('rezerwacja')
+            $bilet = Bilet::with('rezerwacja.miejsce')
                 ->lockForUpdate()
                 ->findOrFail($data['bilet_id']);
 
@@ -531,25 +537,43 @@ public function faktura(Request $request, $id)
                 abort(403, 'Nieprawidłowy PIN');
             }
 
-            // 💰 ZWROT
+
+            $platnosc = Platnosc::where('bilet_id', $bilet->id)
+                ->orderByDesc('created_at')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+
             Platnosc::create([
-                'kwota'     => -350,
-                'metoda'    => 'BLIK',
-                'status'    => 'ZWROT',
+                'kwota'          => -abs($platnosc->kwota),
+                'metoda'         => 'BLIK',
                 'data_platnosci' => now(),
-                'bilet_id'  => $bilet->id,
-                'klient_id' => $klient->id,
+                'bilet_id'       => $bilet->id,
+                'klient_id'      => $klient->id,
             ]);
 
-            $bilet->update(['status' => 'ZWROCONY']);
-            $bilet->rezerwacja->update(['status' => 'ANULOWANA']);
+
+            if ($bilet->rezerwacja->miejsce) {
+                $bilet->rezerwacja->miejsce->update([
+                    'zajete' => false
+                ]);
+            }
+
+ 
+            $bilet->rezerwacja->delete();
+
+            $bilet->update([
+                'status' => 'ZWROCONY'
+            ]);
 
             return response()->json([
-                'message'  => 'Zwrot wykonany poprawnie',
+                'message' => 'Zwrot wykonany poprawnie',
                 'bilet_id' => $bilet->id,
             ]);
         });
     }
+
+
     public function show(Request $request, $id)
     {
         $this->requireRole($request, ['KASJER', 'MENADZER']);

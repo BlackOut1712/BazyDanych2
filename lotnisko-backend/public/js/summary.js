@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const r = rezerwacje[0]; // najnowsza
+        const r = rezerwacje[0]; 
 
         renderSummary(r, flight);
 

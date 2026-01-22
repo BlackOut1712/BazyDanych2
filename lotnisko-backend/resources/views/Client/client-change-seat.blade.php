@@ -16,7 +16,9 @@
 <body>
 
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/client/dashboard">Lotnisko</a>
+    </div>
     <div class="actions">
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
     </div>
@@ -32,7 +34,7 @@
 
     <div class="seat-layout">
 
-        <!-- SAMOLOT – 1:1 JAK KASJER -->
+        <!-- SAMOLOT -->
         <div class="plane plane-svg">
             <svg class="plane-body" viewBox="0 0 300 1100" preserveAspectRatio="none">
                 <path d="
@@ -65,7 +67,7 @@
             <h3>Informacje o bilecie</h3>
 
             <div id="ticketInfo" class="summary-data">
-                ⏳ Ładowanie danych biletu...
+                 Ładowanie danych biletu...
             </div>
 
             <button
@@ -73,7 +75,7 @@
                 class="btn-primary"
                 onclick="confirmSeatChange()"
             >
-                ✔ Zapisz zmianę
+                 Zapisz zmianę
             </button>
 
             <button
@@ -82,7 +84,7 @@
                 onclick="goBack()"
                 style="margin-top: 12px;"
             >
-                ⬅ Anuluj
+                 Anuluj
             </button>
         </div>
 

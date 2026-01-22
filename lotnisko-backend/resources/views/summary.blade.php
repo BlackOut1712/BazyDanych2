@@ -17,7 +17,7 @@
         <h2>Rezerwacja utworzona</h2>
 
         <div id="summaryData" class="summary-data">
-            <!-- dane w JS -->
+            
         </div>
 
         <div class="actions">

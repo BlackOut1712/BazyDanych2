@@ -9,14 +9,14 @@
 <body>
 
 <header class="top-bar">
-    <!-- ❌ index.html → ✅ route "/" -->
+    
     <div class="logo"><a href="/">Lotnisko</a></div>
 
     <div class="top-actions">
-        <!-- ❌ register.html → ✅ /register -->
+        
         <a href="/register">Zarejestruj się</a>
 
-        <!-- ❌ login.html → ✅ /login -->
+        
         <a href="/login">Zaloguj się</a>
     </div>
 </header>
@@ -45,7 +45,7 @@
         </button>
     </div>
 
-    <!-- LISTA WYNIKÓW -->
+    
     <div class="results">
         <div class="results-header">
             <span>Godzina odlotu</span>

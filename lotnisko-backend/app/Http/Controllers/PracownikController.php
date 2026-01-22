@@ -54,8 +54,8 @@ class PracownikController extends Controller
                 'required',
                 'string',
                 'min:6',
-                'regex:/[A-Z]/', // co najmniej 1 duża litera
-                'regex:/[0-9]/', // co najmniej 1 cyfra
+                'regex:/[A-Z]/', 
+                'regex:/[0-9]/', 
             ],
 
 
@@ -78,7 +78,7 @@ class PracownikController extends Controller
 
         $p = Pracownik::findOrFail($id);
 
-        // 🔒 BLOKADA GŁÓWNEGO ADMINA
+        
         if ($p->login === 'admin') {
             return response()->json([
                 'message' => 'Nie można modyfikować głównego administratora'
@@ -101,8 +101,8 @@ class PracownikController extends Controller
                 'sometimes',
                 'string',
                 'min:6',
-                'regex:/[A-Z]/', // co najmniej 1 duża litera
-                'regex:/[0-9]/', // co najmniej 1 cyfra
+                'regex:/[A-Z]/', 
+                'regex:/[0-9]/', 
             ],
 
         ]);
@@ -128,7 +128,7 @@ class PracownikController extends Controller
 
         $p = Pracownik::findOrFail($id);
 
-        // 🔒 BLOKADA GŁÓWNEGO ADMINA
+      
         if ($p->login === 'admin') {
             return response()->json([
                 'message' => 'Nie można zablokować głównego administratora'

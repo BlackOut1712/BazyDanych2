@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // tylko kasjer
+    
     checkSession(['KASJER']);
     loadTickets();
 });
 
-/* ============================
-   ŁADOWANIE BILETÓW
-============================ */
+
 async function loadTickets() {
     const body = document.getElementById('ticketsBody');
 
@@ -18,13 +16,13 @@ async function loadTickets() {
     body.innerHTML = `
         <tr>
             <td colspan="6" class="table-loading">
-                ⏳ Ładowanie biletów...
+                 Ładowanie biletów...
             </td>
         </tr>
     `;
 
     try {
-        // ✅ BILETY – nie rezerwacje
+      
         const tickets = await apiFetch('/bilety');
         body.innerHTML = '';
 
@@ -45,7 +43,7 @@ async function loadTickets() {
             const statusClass = `status-${b.status}`;
             const isInactive = ['ZWROCONY', 'ANULOWANY'].includes(b.status);
 
-            // ✅ POPRAWNE ŚCIEŻKI Z JSON-a
+            
             const miejsce = b.rezerwacja?.miejsce;
             const lot = miejsce?.lot;
             const trasa = lot?.trasa;
@@ -92,21 +90,21 @@ async function loadTickets() {
                                         class="action-btn"
                                         onclick="changeSeat(${b.id})"
                                     >
-                                        🔄 Miejsce
+                                         Miejsce
                                     </button>
 
                                     <button
                                         class="action-btn"
                                         onclick="refundTicket(${b.id})"
                                     >
-                                        💸 Zwrot
+                                         Zwrot
                                     </button>
 
                                     <button
                                         class="action-btn"
                                         onclick="issueInvoice(${b.id})"
                                     >
-                                        🧾 Faktura
+                                         Faktura
                                     </button>
                                 </div>
                               `
@@ -122,30 +120,21 @@ async function loadTickets() {
         body.innerHTML = `
             <tr>
                 <td colspan="6" class="table-loading" style="color:red">
-                    ❌ Błąd pobierania biletów
+                     Błąd pobierania biletów
                 </td>
             </tr>
         `;
     }
 }
 
-/* ============================
-   AKCJE (zgodne z UML)
-============================ */
 
-/**
- * <<extend>> Zmiana zarezerwowanego miejsca
- */
+
 function changeSeat(biletId) {
     localStorage.setItem('changeSeatBiletId', biletId);
     window.location.href = `/cashier/change-seat`;
 }
 
-/**
- * <<extend>> Zwrot biletu
- *   <<include>> Zwrot środków
- *   <<include>> Anulowanie rezerwacji
- */
+
 function refundTicket(biletId) {
     if (!confirm('Czy na pewno chcesz zwrócić ten bilet?')) return;
 
@@ -154,12 +143,7 @@ function refundTicket(biletId) {
     window.location.href = '/cashier/refund';
 }
 
-/**
- * <<extend>> Wystawienie faktury
- * ✔ TEN SAM KOD
- * ✔ TEN SAM FETCH
- * ✔ JEDYNA ZMIANA: URL → WEB ROUTE
- */
+
 async function issueInvoice(biletId) {
     try {
         const response = await fetch(`/cashier/faktura/${biletId}`, {
@@ -184,6 +168,6 @@ async function issueInvoice(biletId) {
 
     } catch (e) {
         console.error(e);
-        alert('❌ Nie udało się wygenerować faktury');
+        alert(' Nie udało się wygenerować faktury');
     }
 }

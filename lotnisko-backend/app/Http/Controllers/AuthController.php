@@ -55,13 +55,13 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'role' => strtoupper($pracownik->rola), // KASJER / MENADZER
+            'role' => strtoupper($pracownik->rola), 
             'user' => $pracownik,
         ]);
     }
 
     /* =========================
-       REJESTRACJA (NOWA, BEZ WPŁYWU NA LOGIN)
+       REJESTRACJA
     ========================= */
     public function register(Request $request)
     {

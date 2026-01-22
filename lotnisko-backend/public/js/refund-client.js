@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const phoneInput = document.getElementById('phoneNumber');
 
-    // telefon zostaje TYLKO wizualnie (jeśli chcesz), backend go nie używa
+    
     if (!phoneInput) return;
 
     phoneInput.addEventListener('input', () => {
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function refundBlik() {
-    const pinInput = document.getElementById('blikCode'); // pole na PIN
+    const pinInput = document.getElementById('blikCode'); 
     const result = document.getElementById('refundResult');
 
     if (!pinInput || !result) {
@@ -28,9 +28,7 @@ async function refundBlik() {
 
     const pin = pinInput.value.trim();
 
-    // =========================
-    // WALIDACJA
-    // =========================
+ 
     if (!/^\d{6}$/.test(pin)) {
         result.innerHTML =
             `<p style="color:red">PIN musi mieć dokładnie 6 cyfr</p>`;
@@ -44,7 +42,7 @@ async function refundBlik() {
         return;
     }
 
-    result.innerHTML = `<p>⏳ Przetwarzanie zwrotu...</p>`;
+    result.innerHTML = `<p> Przetwarzanie zwrotu...</p>`;
 
     try {
         await apiFetch('/client/bilety/zwrot', {
@@ -56,7 +54,7 @@ async function refundBlik() {
         });
 
         result.innerHTML =
-            `<p style="color:green">✔ Zwrot wykonany poprawnie</p>`;
+            `<p style="color:green"> Zwrot wykonany poprawnie</p>`;
 
         localStorage.removeItem('refund_bilet_id');
 
@@ -67,6 +65,6 @@ async function refundBlik() {
     } catch (e) {
         console.error(e);
         result.innerHTML =
-            `<p style="color:red">❌ Nieprawidłowy PIN</p>`;
+            `<p style="color:red"> Nieprawidłowy PIN</p>`;
     }
 }

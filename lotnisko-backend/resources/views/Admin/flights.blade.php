@@ -9,7 +9,7 @@
 
 <header class="top-bar">
     <div class="logo">
-        <a href="/dashboard">Lotnisko</a>
+        <a href="/cashier/dashboard">Lotnisko</a>
     </div>
     <div class="top-actions">
         <button class="btn-secondary" onclick="goBack()">
@@ -76,7 +76,7 @@
                 <option value="NIEAKTYWNY">Nieaktywny</option>
             </select>
 
-            <!-- 🔥 ZAKRES CEN (EKONOMICZNA / BIZNES) -->
+            <!-- ZAKRES CEN (EKONOMICZNA / BIZNES) -->
             <select id="priceRange">
                 <option value="">-- wybierz zakres cen (EKO / BUS) --</option>
                 <option value="250|500">Ekonomiczna 250 zł / Biznes 500 zł</option>

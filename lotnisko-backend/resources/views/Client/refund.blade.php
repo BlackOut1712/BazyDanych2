@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS -->
+    
     <link rel="stylesheet" href="/css/style.css">
 
     <!-- SESJA -->
@@ -18,7 +18,7 @@
 
 <body class="refund-page">
 
-<!-- ⬇️ CENTRALNY WRAPPER (jak BLIK) -->
+<!-- CENTRALNY WRAPPER -->
 <div class="blik-container">
 
     <div class="blik-card">
@@ -52,7 +52,7 @@
             class="btn-primary blik-btn"
             onclick="refundBlik()"
         >
-            💸 Wykonaj zwrot
+             Wykonaj zwrot
         </button>
 
         <div id="refundResult" class="blik-result"></div>
@@ -61,7 +61,6 @@
 
 </div>
 
-<!-- JS -->
 <script src="/js/app.js"></script>
 <script src="/js/refund-client.js"></script>
 

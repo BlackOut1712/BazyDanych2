@@ -7,7 +7,7 @@
     <title>Sprzedaż biletu</title>
     <link rel="stylesheet" href="/css/style.css">
 
-    <!-- SESJA -->
+  
     <script src="/js/session.js"></script>
     <script>
         checkSession(['KASJER', 'MENADZER']);
@@ -16,7 +16,9 @@
 <body>
 
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/cashier/dashboard">Lotnisko</a>
+    </div>
     <div class="top-actions">
         <button type="button" class="btn-secondary" onclick="goBack()">
             ⬅ Wróć do panelu kasjera
@@ -113,7 +115,7 @@
 
         </div>
 
-        <!-- FALLBACK SELECT -->
+        
         <div class="form-row">
             <label for="miejsceSelect">Miejsce (lista)</label>
             <select id="miejsceSelect" disabled>
@@ -121,7 +123,7 @@
             </select>
         </div>
 
-        <!-- CENA – TECHNICZNA (Z BLOKADĄ) -->
+        <!-- CENA -->
         <div class="form-row">
             <label for="priceInput">Cena biletu (zł)</label>
             <input

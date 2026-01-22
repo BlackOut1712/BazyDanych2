@@ -8,8 +8,9 @@
 <body>
 
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
-</header>
+    <div class="logo">
+        <a href="/client/dashboard">Lotnisko</a>
+    </div>
 
 <main class="container">
 
@@ -17,7 +18,7 @@
         <h2>Płatność za bilet</h2>
 
         <div id="paymentSummary" class="summary-data">
-            <!-- dane z JS -->
+            
         </div>
 
         <div class="payment-methods">

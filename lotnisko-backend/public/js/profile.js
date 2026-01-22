@@ -8,7 +8,7 @@ document.getElementById('passwordForm')?.addEventListener('submit', async e => {
     const pass1 = document.getElementById('new_password').value.trim();
     const pass2 = document.getElementById('new_password_confirm').value.trim();
 
-    // 🔒 DOKŁADNIE 6 CYFR
+    
     const pinRegex = /^\d{6}$/;
 
     if (!pinRegex.test(current)) {
@@ -44,12 +44,10 @@ document.getElementById('passwordForm')?.addEventListener('submit', async e => {
     }
 });
 
-/* ===============================
-   POBIERANIE PROFILU
-================================ */
+
 async function loadProfile() {
     try {
-        // ✅ POPRAWNY ENDPOINT
+       
         const user = await apiFetch('/client/profile');
 
         document.getElementById('imie').value = user.imie ?? '';
@@ -64,9 +62,7 @@ async function loadProfile() {
     }
 }
 
-/* ===============================
-   AKTUALIZACJA DANYCH (EMAIL / TEL)
-================================ */
+
 document.getElementById('profileForm')?.addEventListener('submit', async e => {
     e.preventDefault();
 
@@ -76,7 +72,7 @@ document.getElementById('profileForm')?.addEventListener('submit', async e => {
     };
 
     try {
-        // ✅ TEN SAM ENDPOINT
+        
         await apiFetch('/client/profile', {
             method: 'PUT',
             body: JSON.stringify(payload)

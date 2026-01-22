@@ -7,7 +7,7 @@ function payBlik() {
         return;
     }
 
-    result.innerHTML = `<p>⏳ Przetwarzanie płatności...</p>`;
+    result.innerHTML = `<p> Przetwarzanie płatności...</p>`;
 
     setTimeout(async () => {
         const role = getSessionItem('role');
@@ -23,7 +23,7 @@ function payBlik() {
                     return;
                 }
 
-                // ✅ WYMUSZENIE TYPÓW (KLUCZOWE)
+            
                 const biletId  = Number(biletIdRaw);
                 const clientId = Number(clientIdRaw);
 
@@ -37,7 +37,7 @@ function payBlik() {
                         'Content-Type': 'application/json',
                         'X-Client-Id': clientId
                     },
-                    body: JSON.stringify({}) // backend oczekuje JSON
+                    body: JSON.stringify({}) 
                 });
 
                 localStorage.removeItem('blik_bilet_id');
@@ -50,7 +50,7 @@ function payBlik() {
         } catch (e) {
             console.error('Błąd płatności BLIK:', e);
             result.innerHTML =
-                `<p style="color:red">❌ Błąd płatności</p>`;
+                `<p style="color:red"> Błąd płatności</p>`;
             return;
         }
 

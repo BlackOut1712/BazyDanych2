@@ -9,10 +9,9 @@
 
 <header class="top-bar">
     <div class="logo">
-        <a href="/admin/dashboard">Lotnisko</a>
+        <a href="/cashier/dashboard">Lotnisko</a>
     </div>
-
-    <!-- 🔥 POPRAWIONE PRZYCISKI -->
+    <!-- POPRAWIONE PRZYCISKI -->
     <div class="top-actions">
         <button class="btn-secondary" onclick="goBack()">
             ← Wróć do panelu menadżera
@@ -23,7 +22,7 @@
 
 <main class="container">
 
-    <!-- ===== FILTR OKRESU ===== -->
+    <!-- FILTR OKRESU -->
     <section class="card">
         <h2>Statystyki</h2>
 
@@ -37,7 +36,7 @@
         </div>
     </section>
 
-    <!-- ===== KAFLE STATYSTYK ===== -->
+    <!-- KAFLE STATYSTYK -->
     <section class="stats-grid">
         <div class="card stat-card">
             <h3>Liczba lotów</h3>
@@ -60,7 +59,7 @@
         </div>
     </section>
 
-    <!-- ===== NAJPOPULARNIEJSZE TRASY ===== -->
+    <!-- NAJPOPULARNIEJSZE TRASY -->
     <section class="card">
         <h3>Najpopularniejsze trasy</h3>
 

@@ -7,7 +7,7 @@
     <title>Rezerwacja miejsca</title>
     <link rel="stylesheet" href="/css/style.css">
 
-    <!-- SESJA -->
+    
     <script src="/js/session.js"></script>
     <script>
         checkSession(['CLIENT']);
@@ -71,12 +71,12 @@
             >
         </div>
 
-        <!-- 🔥 NOWE: informacja o autofill -->
+        
         <div class="form-hint">
             Jeśli pola pozostaną puste, system automatycznie użyje danych z Twojego konta.
         </div>
 
-        <!-- 🔥 DODANE (NIEINWAZYJNE): znacznik dla JS -->
+        
         <div id="autofill-ready" data-enabled="true" style="display:none"></div>
 
     </div>
@@ -166,7 +166,7 @@
                 disabled
                 onclick="reserveSeat()"
             >
-                💳 Przejdź do płatności
+                 Przejdź do płatności
             </button>
 
         </div>
@@ -178,7 +178,7 @@
 </section>
 </main>
 
-<!-- JS -->
+
 <script src="/js/app.js"></script>
 <script src="/js/seats.js"></script>
 

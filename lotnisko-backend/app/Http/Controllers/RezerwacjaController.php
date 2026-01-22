@@ -29,14 +29,24 @@ class RezerwacjaController extends Controller
 
     private function wygasRezerwacje(): void
     {
-        Rezerwacja::where('status', 'OCZEKUJE')
+        $wygasle = Rezerwacja::where('status', 'OCZEKUJE')
             ->whereNotNull('wygasa_o')
             ->where('wygasa_o', '<', now())
-            ->update([
+            ->get();
+
+        foreach ($wygasle as $r) {
+            if ($r->miejsce) {
+                $r->miejsce->update(['zajete' => false]);
+            }
+
+            $r->update([
                 'status' => 'WYGASLA',
-                'wygasa_o' => null,
+                'wygasa_o' => null
             ]);
+        }
+
     }
+
 
     public function index(Request $request)
     {
@@ -61,57 +71,63 @@ class RezerwacjaController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $this->wygasRezerwacje();
+{
+    $this->wygasRezerwacje();
 
-        $validated = $request->validate([
-            'klient_id'    => 'required|exists:klients,id',
-            'miejsce_id'   => 'required|exists:miejscas,id',
-            'pracownik_id' => 'nullable|exists:pracowniks,id',
-        ]);
+    $validated = $request->validate([
+        'klient_id'    => 'required|exists:klients,id',
+        'miejsce_id'   => 'required|exists:miejscas,id',
+        'pracownik_id' => 'nullable|exists:pracowniks,id',
+    ]);
 
-        try {
-            return DB::transaction(function () use ($validated) {
+    try {
+        return DB::transaction(function () use ($validated) {
 
-                // twarda blokada miejsca (spójna z modelem)
-                $zajete = Rezerwacja::where('miejsce_id', $validated['miejsce_id'])
-                    ->whereIn('status', ['OCZEKUJE', 'POTWIERDZONA'])
-                    ->where(function ($q) {
-                        $q->whereNull('wygasa_o')
-                          ->orWhere('wygasa_o', '>', now());
-                    })
-                    ->exists();
+            $zajete = Rezerwacja::where('miejsce_id', $validated['miejsce_id'])
+                ->whereIn('status', ['OCZEKUJE', 'POTWIERDZONA'])
+                ->where(function ($q) {
+                    $q->whereNull('wygasa_o')
+                      ->orWhere('wygasa_o', '>', now());
+                })
+                ->exists();
 
-                if ($zajete) {
-                    throw ValidationException::withMessages([
-                        'miejsce_id' => 'To miejsce jest już zajęte w tym locie',
-                    ]);
-                }
-
-                return response()->json(
-                    Rezerwacja::create([
-                        'klient_id'       => $validated['klient_id'],
-                        'miejsce_id'      => $validated['miejsce_id'],
-                        'pracownik_id'    => $validated['pracownik_id'] ?? null,
-                        'status'          => 'OCZEKUJE',
-                        'data_rezerwacji' => now()->toDateString(),
-                        'wygasa_o'        => now()->addMinutes(15),
-                    ]),
-                    201
-                );
-            });
-        } catch (QueryException $e) {
-
-            // ochrona przed race condition (UNIQUE miejsce_id)
-            if ($e->getCode() === '23000') {
+            if ($zajete) {
                 throw ValidationException::withMessages([
-                    'miejsce_id' => 'To miejsce zostało właśnie zajęte przez innego użytkownika',
+                    'miejsce_id' => 'To miejsce jest już zajęte w tym locie',
                 ]);
             }
 
+            $rezerwacja = Rezerwacja::create([
+                'klient_id'       => $validated['klient_id'],
+                'miejsce_id'      => $validated['miejsce_id'],
+                'pracownik_id'    => $validated['pracownik_id'] ?? null,
+                'status'          => 'OCZEKUJE',
+                'data_rezerwacji' => now()->toDateString(),
+                'wygasa_o'        => now()->addMinutes(15),
+            ]);
+
+            Miejsce::where('id', $validated['miejsce_id'])
+                ->update(['zajete' => true]);
+
+            return response()->json($rezerwacja, 201);
+        });
+
+    } catch (\Throwable $e) {
+
+        if ($e instanceof ValidationException) {
             throw $e;
         }
+
+        if ($e instanceof QueryException && $e->getCode() === '23000') {
+            throw ValidationException::withMessages([
+                'miejsce_id' => 'To miejsce zostało właśnie zajęte przez innego użytkownika',
+            ]);
+        }
+
+        abort(500, 'Błąd serwera przy rezerwacji');
     }
+}
+
 
     public function update(Request $request, $id)
     {
@@ -175,7 +191,7 @@ class RezerwacjaController extends Controller
             ->lockForUpdate()
             ->findOrFail($data['rezerwacja_id']);
 
-        // 🔐 bezpieczeństwo
+        
         if ((int)$rezerwacja->klient_id !== (int)$clientId) {
             abort(403, 'To nie jest Twoja rezerwacja');
         }
@@ -184,10 +200,10 @@ class RezerwacjaController extends Controller
             abort(409, 'Tylko potwierdzona rezerwacja może zmienić miejsce');
         }
 
-        // 🔓 zwalniamy stare miejsce
+        
         $rezerwacja->miejsce->update(['zajete' => false]);
 
-        // 🔒 zajmujemy nowe
+        
         $noweMiejsce = Miejsce::lockForUpdate()->findOrFail($data['nowe_miejsce_id']);
         if ($noweMiejsce->zajete) {
             abort(409, 'Miejsce jest już zajęte');
@@ -210,6 +226,20 @@ public function zmienMiejsce(Request $request)
         'rezerwacja_id'    => 'required|exists:rezerwacjes,id',
         'nowe_miejsce_id'  => 'required|exists:miejscas,id',
     ]);
+    $role = strtoupper($request->header('X-User-Role'));
+
+    if ($role === 'CLIENT') {
+        $clientId = $request->header('X-Client-Id');
+
+        $rezerwacjaCheck = Rezerwacja::where('id', $data['rezerwacja_id'])
+            ->where('klient_id', $clientId)
+            ->exists();
+
+        if (!$rezerwacjaCheck) {
+            abort(403, 'To nie jest Twoja rezerwacja');
+        }
+    }
+
 
     return DB::transaction(function () use ($data) {
 
@@ -222,15 +252,15 @@ public function zmienMiejsce(Request $request)
             abort(404, 'Rezerwacja nie istnieje');
         }
 
-        // 🔒 stare miejsce → zwalniamy
+        
         DB::table('miejscas')
             ->where('id', $rezerwacja->miejsce_id)
-            ->update(['czy_zajete' => false]);
+            ->update(['zajete' => false]);
 
-        // 🔒 nowe miejsce → sprawdzamy i blokujemy
+        
         $nowe = DB::table('miejscas')
             ->where('id', $data['nowe_miejsce_id'])
-            ->where('czy_zajete', false)
+            ->where('zajete', false)
             ->lockForUpdate()
             ->first();
 
@@ -240,7 +270,7 @@ public function zmienMiejsce(Request $request)
 
         DB::table('miejscas')
             ->where('id', $data['nowe_miejsce_id'])
-            ->update(['czy_zajete' => true]);
+            ->update(['zajete' => true]);
 
         DB::table('rezerwacjes')
             ->where('id', $rezerwacja->id)

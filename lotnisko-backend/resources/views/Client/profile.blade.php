@@ -14,7 +14,9 @@
 
 <!-- TOP BAR -->
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/client/dashboard">Lotnisko</a>
+    </div>
 
     <div class="top-actions">
         <span class="role-label">Klient</span>
@@ -25,7 +27,7 @@
     </div>
 </header>
 
-<!-- CONTENT -->
+
 <main class="container">
 
     <!-- HEADER -->
@@ -34,7 +36,7 @@
         <p>Zarządzaj swoimi danymi kontaktowymi i hasłem</p>
     </section>
 
-    <!-- GRID: DANE + HASŁO -->
+    <!-- DANE + HASŁO -->
     <div class="profile-grid">
 
         <!-- DANE UŻYTKOWNIKA -->

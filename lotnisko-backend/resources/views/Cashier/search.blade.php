@@ -14,7 +14,7 @@
         <a href="/cashier/dashboard">Lotnisko</a>
     </div>
 
-    <!-- PRAWA STRONA: PRZYCISKI OBOK SIEBIE -->
+    
     <div class="top-actions">
         <button type="button" class="btn-secondary" onclick="goBack()">
             ⬅ Wróć do panelu kasjera

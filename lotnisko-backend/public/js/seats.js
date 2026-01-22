@@ -12,16 +12,14 @@ let cachedSeats = [];
 let selectedLot = null;
 let isProcessing = false;
 
-/* ⛔ fallback cen */
+
 const PRICE_BY_CLASS = {
     ECONOMY: 250,
     BUSINESS: 500,
     FIRST: 800
 };
 
-/* ============================
-   FORMAT DATY
-============================ */
+
 function formatLotDate(dateString, timeString) {
     if (!dateString) return '—';
 
@@ -31,9 +29,7 @@ function formatLotDate(dateString, timeString) {
            `${d.getFullYear()} ${timeString || ''}`.trim();
 }
 
-/* ============================
-   INIT
-============================ */
+
 async function initSeats() {
     const stored = localStorage.getItem('selectedFlight');
 
@@ -48,17 +44,13 @@ async function initSeats() {
     await loadSeatsForLot();
 }
 
-/* ============================
-   PODSUMOWANIE – LOT
-============================ */
+
 function updateSummaryLot() {
     document.getElementById('summaryLot').textContent =
         `${selectedLot.from} → ${selectedLot.to} (${formatLotDate(selectedLot.date, selectedLot.time)})`;
 }
 
-/* ============================
-   PASAŻER → PODSUMOWANIE
-============================ */
+
 function bindPassengerInputs() {
     const map = [
         ['passengerFirstName', 'summaryPassengerFirstName'],
@@ -78,9 +70,7 @@ function bindPassengerInputs() {
     });
 }
 
-/* ============================
-   MAPA MIEJSC
-============================ */
+
 async function loadSeatsForLot() {
     const map = document.getElementById('seatMap');
     map.innerHTML = '';
@@ -116,7 +106,9 @@ async function loadSeatsForLot() {
             (rows[row] ??= []).push(m);
         });
 
-        Object.keys(rows).sort().forEach(row => {
+        Object.keys(rows)
+        .sort((a, b) => Number(a) - Number(b))
+        .forEach(row => {
             const rowLabel = document.createElement('div');
             rowLabel.className = 'row-label';
             rowLabel.textContent = row;
@@ -142,9 +134,7 @@ async function loadSeatsForLot() {
     renderSection('ECONOMY CLASS', byClass.ECONOMY);
 }
 
-/* ============================
-   WYBÓR MIEJSCA
-============================ */
+
 function selectSeat(seatId, seatClass, seatNumber, el) {
     document.querySelectorAll('.seat.selected')
         .forEach(s => s.classList.remove('selected'));
@@ -165,10 +155,7 @@ function selectSeat(seatId, seatClass, seatNumber, el) {
     document.getElementById('reserveBtn').disabled = false;
 }
 
-/* ============================
-   REZERWACJA → BLIK
-   ✅ POPRAWIONE
-============================ */
+
 async function reserveSeat() {
     if (isProcessing) return;
     isProcessing = true;
@@ -185,7 +172,7 @@ async function reserveSeat() {
         return;
     }
 
-    /* 🔥 ZAPIS DANYCH PASAŻERA DO LOCALSTORAGE (dla BLIK) */
+   
     localStorage.setItem('passengerFirstName', passengerFirstName.value.trim());
     localStorage.setItem('passengerLastName', passengerLastName.value.trim());
     localStorage.setItem('passengerPesel', passengerPesel.value.trim());

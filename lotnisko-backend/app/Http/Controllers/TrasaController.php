@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class TrasaController extends Controller
 {
-    // GET /api/trasy
+    
     public function index()
     {
         return response()->json(
@@ -15,7 +15,7 @@ class TrasaController extends Controller
         );
     }
 
-    // POST /api/trasy
+    
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -29,7 +29,7 @@ class TrasaController extends Controller
         return response()->json($trasa, 201);
     }
 
-    // GET /api/trasy/{id}
+    
     public function show($id)
     {
         return response()->json(
@@ -37,7 +37,7 @@ class TrasaController extends Controller
         );
     }
 
-    // DELETE /api/trasy/{id}
+    
     public function destroy($id)
     {
         Trasa::findOrFail($id)->delete();

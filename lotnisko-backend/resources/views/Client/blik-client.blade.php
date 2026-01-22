@@ -6,13 +6,13 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {{-- CSS --}}
+    
     <link rel="stylesheet" href="/css/style.css">
 
-    {{-- SESJA --}}
+    
     <script src="/js/session.js"></script>
     <script>
-        // 🔒 TYLKO KLIENT
+        
         checkSession(['CLIENT']);
     </script>
 </head>
@@ -43,7 +43,7 @@
             class="btn-primary blik-btn"
             onclick="payBlik()"
         >
-            💳 Zapłać
+             Zapłać
         </button>
 
         <div id="blikResult" class="blik-result"></div>
@@ -51,7 +51,7 @@
     </div>
 </div>
 
-{{-- JS --}}
+
 <script src="/js/app.js"></script>
 <script src="/js/blik-client.js"></script>
 

@@ -12,10 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class LotController extends Controller
 {
-    /* =========================
-       GET /api/loty
-       ➕ DOŁĄCZONE CENY + cena_od
-    ========================= */
+
     public function index()
     {
         $loty = Lot::with([
@@ -23,9 +20,15 @@ class LotController extends Controller
             'trasa.lotniskoPrzylotu',
             'samolot',
             'ceny'
-        ])->get();
+        ])
+        ->whereRaw(
+            "(lots.data + lots.godzina::time) > ?",
+            [now()]
+        )
+        ->orderBy('data')
+        ->orderBy('godzina')
+        ->get();
 
-        // 🔥 DODANE – najniższa cena dla listy
         $loty->each(function ($lot) {
             $lot->cena = $lot->ceny->min('cena');
         });
@@ -33,10 +36,7 @@ class LotController extends Controller
         return response()->json($loty);
     }
 
-    /* =========================
-       POST /api/loty
-       ➕ TWORZENIE LOTU + CEN
-    ========================= */
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -108,10 +108,7 @@ class LotController extends Controller
         });
     }
 
-    /* =========================
-       GET /api/loty/{id}
-       ➕ CENY
-    ========================= */
+
     public function show($id)
     {
         $lot = Lot::with([
@@ -127,10 +124,7 @@ class LotController extends Controller
         return response()->json($lot);
     }
 
-    /* =========================
-       PUT /api/loty/{id}
-       ➕ EDYCJA CEN
-    ========================= */
+
     public function update(Request $request, $id)
     {
         $lot = Lot::findOrFail($id);
@@ -177,9 +171,7 @@ class LotController extends Controller
         return response()->json($lot);
     }
 
-    /* =========================
-       DELETE /api/loty/{id}
-    ========================= */
+
     public function destroy($id)
     {
         $lot = Lot::findOrFail($id);
@@ -197,9 +189,7 @@ class LotController extends Controller
         return response()->json(['message' => 'Lot usunięty']);
     }
 
-    /* =========================
-       GET /api/loty/{id}/miejsca
-    ========================= */
+
     public function dostepneMiejsca($id)
     {
         $lot = Lot::findOrFail($id);

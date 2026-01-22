@@ -15,7 +15,7 @@ class Bilet extends Model
         'nazwisko_pasazera',
         'pesel_pasazera',
 
-        // 🔥 KLUCZOWE – TEGO BRAKOWAŁO
+
         'rezerwacja_id',
         'lot_id',
         'miejsce_id',
@@ -28,9 +28,7 @@ class Bilet extends Model
         'data_wystawienia' => 'date',
     ];
 
-    // =============================
-    // RELACJE
-    // =============================
+
     public function rezerwacja()
     {
         return $this->belongsTo(Rezerwacja::class);
@@ -50,4 +48,5 @@ class Bilet extends Model
     {
         return $this->hasMany(Platnosc::class);
     }
+
 }

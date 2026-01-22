@@ -12,9 +12,11 @@
 </head>
 <body>
 
-<!-- TOP BAR -->
+
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/client/dashboard">Lotnisko</a>
+    </div>
 
     <div class="top-actions">
         <span class="role-label">Klient</span>
@@ -29,9 +31,7 @@
 
 <main class="container tickets-page">
 
-    <!-- =========================
-         JEDNA KARTA
-    ========================== -->
+
     <section class="card tickets-management">
 
         <!-- HEADER -->
@@ -56,7 +56,7 @@
                 <tbody id="tickets-container">
                     <tr>
                         <td colspan="5" class="table-loading">
-                            ⏳ Ładowanie biletów...
+                             Ładowanie biletów...
                         </td>
                     </tr>
                 </tbody>

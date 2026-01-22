@@ -1,17 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-    searchFlights(); // opcjonalnie: pokaż wszystkie loty na start
+    searchFlights();
 });
 
-/* ===============================
-   NORMALIZACJA DATY (DODANE)
-================================ */
-function normalizeDate(dateString) {
-    if (!dateString) return 0;
 
-    // obsługa: YYYY-MM-DD oraz YYYY-MM-DDTHH:mm:ss
-    const dateOnly = dateString.split('T')[0];
-    return new Date(dateOnly).getTime();
+function formatDatePL(dateString) {
+    if (!dateString) return '—';
+
+    const d = new Date(dateString);
+    if (isNaN(d)) return '—';
+
+    return d.toLocaleDateString('pl-PL', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
 }
+
 
 async function searchFlights() {
     const container =
@@ -25,34 +29,46 @@ async function searchFlights() {
 
     container.innerHTML = '';
 
-    const date = document.getElementById('date')?.value || '';
-    const from = document.getElementById('from')?.value.toLowerCase() || '';
-    const to = document.getElementById('to')?.value.toLowerCase() || '';
+    const dateInput = document.getElementById('date')?.value || '';
+    const fromInput = document.getElementById('from')?.value.toLowerCase() || '';
+    const toInput = document.getElementById('to')?.value.toLowerCase() || '';
+
+    const now = new Date();
 
     try {
         const flights = await apiFetch('/loty');
 
         const filtered = flights
             .filter(flight => {
-                const flightDate = flight.data?.split('T')[0] || '';
+                
+                if (flight.status !== 'AKTYWNY') return false;
+                if (!flight.data || !flight.godzina) return false;
 
+                
+                const flightDateTime = new Date(
+                    `${flight.data}T${flight.godzina}`
+                );
+
+                
+                if (flightDateTime < now) return false;
+
+                
                 const cityFrom =
                     flight.trasa?.lotnisko_wylotu?.miasto?.toLowerCase() || '';
-
                 const cityTo =
                     flight.trasa?.lotnisko_przylotu?.miasto?.toLowerCase() || '';
 
-                return (
-                    (date ? flightDate === date : true) &&
-                    (from ? cityFrom.includes(from) : true) &&
-                    (to ? cityTo.includes(to) : true)
-                );
+                if (fromInput && !cityFrom.includes(fromInput)) return false;
+                if (toInput && !cityTo.includes(toInput)) return false;
+                if (dateInput && flight.data !== dateInput) return false;
+
+                return true;
             })
-            /* ===============================
-               SORTOWANIE PO DACIE (DODANE)
-            ================================ */
+            
             .sort((a, b) => {
-                return normalizeDate(a.data) - normalizeDate(b.data);
+                const aTime = new Date(`${a.data}T${a.godzina}`);
+                const bTime = new Date(`${b.data}T${b.godzina}`);
+                return aTime - bTime;
             });
 
         if (!filtered.length) {
@@ -64,27 +80,26 @@ async function searchFlights() {
         }
 
         filtered.forEach(flight => {
-            const fromCity = flight.trasa.lotnisko_wylotu.miasto;
-            const toCity = flight.trasa.lotnisko_przylotu.miasto;
-            const dateOnly = flight.data.split('T')[0];
-            const time = flight.godzina ?? '--:--';
-            const price = flight.cena ?? '---';
+            const fromCity = flight.trasa?.lotnisko_wylotu?.miasto || '—';
+            const toCity = flight.trasa?.lotnisko_przylotu?.miasto || '—';
 
-            // zostaje, NIE USUWAMY
-            let arrivalTime = '--:--';
-            if (flight.godzina) {
-                const [h, m] = flight.godzina.split(':');
-                arrivalTime = `${(parseInt(h) + 2) % 24}:${m}`;
+            const dateText = formatDatePL(flight.data);
+            const timeText = flight.godzina.slice(0, 5);
+
+            let price = '—';
+            if (Array.isArray(flight.ceny)) {
+                const eco = flight.ceny.find(c => c.klasa === 'ECONOMY');
+                if (eco?.cena != null) price = eco.cena;
             }
 
-            // WIDOK TABELI (CLIENT / CASHIER)
+           
             if (container.tagName === 'TBODY') {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${fromCity}</td>
                     <td>${toCity}</td>
-                    <td>${dateOnly}</td>
-                    <td>${time}</td>
+                    <td>${dateText}</td>
+                    <td>${timeText}</td>
                     <td>${price} zł</td>
                     <td>
                         <button class="buy-btn"
@@ -96,25 +111,16 @@ async function searchFlights() {
                 container.appendChild(row);
             }
 
-            // WIDOK KART (KASJER / CLIENT)
+           
             if (container.tagName !== 'TBODY') {
                 container.innerHTML += `
                     <div class="flight-card">
-                        <div class="flight-time">
-                            ${time}
-                        </div>
-
+                        <div class="flight-time">${timeText}</div>
                         <div class="flight-route">
                             ${fromCity} - ${toCity}
                         </div>
-
-                        <div class="flight-date">
-                            ${dateOnly}
-                        </div>
-
-                        <div class="flight-price">
-                            od ${price} zł
-                        </div>
+                        <div class="flight-date">${dateText}</div>
+                        <div class="flight-price">od ${price} zł</div>
                     </div>
                 `;
             }

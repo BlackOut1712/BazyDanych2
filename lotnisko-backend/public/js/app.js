@@ -1,32 +1,23 @@
-// 🔥 AUTOMATYCZNIE DZIAŁA:
-// - localhost
-// - LAN (192.168.x.x)
-// - ngrok
+
 const API_URL = window.location.origin + '/api';
 
-/* ===============================
-   API FETCH – WERSJA ODPORNA
-================================ */
+
 async function apiFetch(endpoint, options = {}) {
     const role = getSessionItem('role');
 
     const headers = {
         'Content-Type': 'application/json',
-        'Accept': 'application/json', // ✅ KLUCZOWE – JSON ZAMIAST HTML
+        'Accept': 'application/json', 
         ...(options.headers || {})
     };
 
-    /* ===============================
-       🔐 ROLA UŻYTKOWNIKA
-    ================================ */
+
     if (role) {
         headers['X-User-Role'] = role.toUpperCase();
         headers['X-User-Role-Raw'] = role;
     }
 
-    /* ===============================
-       👤 ID KLIENTA
-    ================================ */
+
     const userRaw = getSessionItem('user');
     if (userRaw) {
         try {
@@ -50,9 +41,9 @@ async function apiFetch(endpoint, options = {}) {
             headers,
             body: options.body ?? undefined,
 
-            // 🔥🔥🔥 KLUCZOWE DODATKI – NIE USUWAĆ
+            
             mode: 'cors',
-            credentials: 'include' // ✅ SESJE / LOGOWANIE LARAVEL
+            credentials: 'include' 
         });
     } catch (e) {
         console.error('Błąd sieci / CORS:', e);
@@ -69,15 +60,13 @@ async function apiFetch(endpoint, options = {}) {
         throw error;
     }
 
-    // DELETE / 204
+    
     if (response.status === 204) return null;
 
     return response.json();
 }
 
-/* ===============================
-   SESSION STORAGE
-================================ */
+
 function getSessionItem(key) {
     return sessionStorage.getItem(key) || localStorage.getItem(key);
 }

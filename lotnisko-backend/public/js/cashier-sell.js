@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /* 🔥 NOWE – reakcja na wybór miejsca z SELECT */
+
     const miejsceSelect = document.getElementById('miejsceSelect');
     if (miejsceSelect) {
         miejsceSelect.addEventListener('change', () => {
@@ -34,16 +34,14 @@ let cachedLots = [];
 let selectedLot = null;
 let cachedSeats = [];
 
-/* ⛔ fallback */
+
 const PRICE_BY_CLASS = {
     ECONOMY: 300,
     BUSINESS: 600,
     FIRST: 1000
 };
 
-/* ============================
-   FORMAT DATY LOTU
-============================ */
+
 function formatLotDate(dateString, timeString) {
     if (!dateString) return '—';
 
@@ -55,9 +53,7 @@ function formatLotDate(dateString, timeString) {
     return `${day}.${month}.${year} ${timeString || ''}`.trim();
 }
 
-/* ============================
-   INIT
-============================ */
+
 async function initSell() {
     await loadKlients();
     await loadLots();
@@ -87,9 +83,7 @@ function resetSeatSelection() {
     sel.disabled = true;
 }
 
-/* ============================
-   KLIENCI
-============================ */
+
 async function loadKlients() {
     const select = document.getElementById('klientSelect');
     if (!select) return;
@@ -116,9 +110,7 @@ async function loadKlients() {
     });
 }
 
-/* ============================
-   LOTY
-============================ */
+
 async function loadLots() {
     const select = document.getElementById('lotSelect');
     if (!select) return;
@@ -154,9 +146,7 @@ function updateSummaryLot() {
         `(${formatLotDate(selectedLot.data, selectedLot.godzina)})`;
 }
 
-/* ============================
-   MAPA MIEJSC
-============================ */
+
 async function loadSeatsForLot() {
     const lotId = document.getElementById('lotSelect').value;
     const map = document.getElementById('seatMap');
@@ -234,9 +224,7 @@ async function loadSeatsForLot() {
     select.disabled = false;
 }
 
-/* ============================
-   WYBÓR MIEJSCA → CENA Z BAZY
-============================ */
+
 function selectSeat(seatId, seatClass, seatNumber, element) {
     document.querySelectorAll('.seat.selected')
         .forEach(s => s.classList.remove('selected'));
@@ -252,12 +240,12 @@ function selectSeat(seatId, seatClass, seatNumber, element) {
 
     let cena = null;
 
-    /* 🔍 DEBUG – ZOBACZ CO NAPRAWDĘ MASZ */
+    
     console.log('selectedLot:', selectedLot);
     console.log('selectedLot.ceny:', selectedLot?.ceny);
     console.log('seatClass:', seatClass);
 
-    /* ✅ NORMALIZACJA KLASY */
+
     if (selectedLot && Array.isArray(selectedLot.ceny)) {
         const found = selectedLot.ceny.find(c =>
             String(c.klasa).toUpperCase() === String(seatClass).toUpperCase()
@@ -268,27 +256,25 @@ function selectSeat(seatId, seatClass, seatNumber, element) {
         }
     }
 
-    /* 🧯 AWARYJNY FALLBACK */
+
     if (cena === null && PRICE_BY_CLASS[seatClass.toUpperCase()]) {
         cena = Number(PRICE_BY_CLASS[seatClass.toUpperCase()]);
     }
 
-    /* ❌ NADAL BRAK CENY */
+
     if (cena === null || isNaN(cena)) {
         document.getElementById('priceInput').value = '';
         document.getElementById('summaryPrice').textContent = '—';
         return;
     }
 
-    /* ✅ UZUPEŁNIENIE */
+
     document.getElementById('priceInput').value = cena;
     document.getElementById('summaryPrice').textContent = cena;
 }
 
 
-/* ============================
-   SPRZEDAŻ → BLIK
-============================ */
+
 async function sellTicket() {
     if (isProcessing) return;
     isProcessing = true;
@@ -307,32 +293,26 @@ async function sellTicket() {
         return;
     }
 
-    let rezerwacja = null;
+    let rezerwacja;
 
     try {
-        // 1️⃣ PRÓBA UTWORZENIA REZERWACJI
         rezerwacja = await apiFetch('/rezerwacje', {
             method: 'POST',
             body: JSON.stringify({ klient_id, miejsce_id })
         });
-
     } catch (e) {
-        console.warn('Rezerwacja już istnieje – próbuję pobrać istniejącą');
-
-        // 2️⃣ JEŚLI JUŻ ISTNIEJE → POBIERZ ISTNIEJĄCĄ
-        try {
-            rezerwacja = await apiFetch(`/miejsca/${miejsce_id}/rezerwacja`);
-        } catch (err) {
-            console.error(err);
+        if (e.status === 409) {
             document.getElementById('sellResult').innerHTML =
-                `<p style="color:red">Nie można pobrać rezerwacji</p>`;
-            isProcessing = false;
-            return;
+                `<p style="color:red">To miejsce jest już zajęte</p>`;
+        } else {
+            document.getElementById('sellResult').innerHTML =
+                `<p style="color:red">Błąd serwera przy rezerwacji</p>`;
         }
+        isProcessing = false;
+        return;
     }
 
     try {
-        // 3️⃣ TWORZENIE BILETU
         const bilet = await apiFetch('/bilety', {
             method: 'POST',
             body: JSON.stringify({
@@ -343,17 +323,15 @@ async function sellTicket() {
             })
         });
 
-        // 4️⃣ PRZEJŚCIE DO BLIK
-
         localStorage.setItem('blik_bilet_id', bilet.id);
-        localStorage.setItem('blik_client_id', klient_id); // ✅ KLUCZOWE
+        localStorage.setItem('blik_client_id', klient_id);
         window.location.href = '/blik';
 
     } catch (e) {
-        console.error(e);
         document.getElementById('sellResult').innerHTML =
             `<p style="color:red">Błąd tworzenia biletu</p>`;
     } finally {
         isProcessing = false;
     }
 }
+

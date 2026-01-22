@@ -1,15 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Dostęp tylko MENADZER
+    
     checkSession(['MENADZER']);
     loadWorkers();
     allowOnlyDigits('pesel', 11);
     allowOnlyDigits('telefon', 9);
 });
 
-// login głównego admina – NIETYKALNY
 const PROTECTED_LOGIN = 'admin';
 function isValidWorkerPassword(password) {
-    if (!password) return true; // puste = bez zmiany
+    if (!password) return true; 
 
     const minLength = password.length >= 6;
     const hasUppercase = /[A-Z]/.test(password);
@@ -17,9 +16,7 @@ function isValidWorkerPassword(password) {
 
     return minLength && hasUppercase && hasDigit;
 }
-/* ============================
-   LISTA PRACOWNIKÓW
-============================ */
+
 async function loadWorkers() {
     const body = document.getElementById('workersBody');
     if (!body) {
@@ -81,9 +78,7 @@ async function loadWorkers() {
     }
 }
 
-/* ============================
-   ZMIANA STATUSU
-============================ */
+
 async function toggleWorker(id) {
     const worker = await getWorkerById(id);
     if (!worker) return;
@@ -108,9 +103,7 @@ async function toggleWorker(id) {
     }
 }
 
-/* ============================
-   EDYCJA PRACOWNIKA
-============================ */
+
 async function editWorker(id) {
     const w = await getWorkerById(id);
     if (!w) return;
@@ -149,9 +142,7 @@ async function editWorker(id) {
     });
 }
 
-/* ============================
-   ZAPIS PRACOWNIKA
-============================ */
+
 async function saveWorker() {
     const id = document.getElementById('workerId')?.value || null;
     const result = document.getElementById('formResult');
@@ -220,9 +211,7 @@ async function saveWorker() {
     }
 }
 
-/* ============================
-   POMOCNICZE
-============================ */
+
 async function getWorkerById(id) {
     try {
         const workers = await apiFetch('/pracownicy');
@@ -232,9 +221,7 @@ async function getWorkerById(id) {
     }
 }
 
-/* ============================
-   RESET FORMULARZA
-============================ */
+
 function resetForm() {
     document.getElementById('formTitle').innerText = 'Dodaj pracownika';
 
@@ -250,15 +237,11 @@ function resetForm() {
     if (idField) idField.value = '';
 }
 
-/* ============================
-   POWRÓT
-============================ */
+
 function goBack() {
     window.location.href = '/admin/dashboard';
 }
-/* ============================
-   🔒 WALIDACJA PESEL / TELEFON
-============================ */
+
 
 function allowOnlyDigits(id, maxLength) {
     const input = document.getElementById(id);
@@ -266,8 +249,8 @@ function allowOnlyDigits(id, maxLength) {
 
     input.addEventListener('input', () => {
         input.value = input.value
-            .replace(/\D/g, '')       // tylko cyfry
-            .slice(0, maxLength);     // limit długości
+            .replace(/\D/g, '')       
+            .slice(0, maxLength);     
     });
 }
 

@@ -1,15 +1,13 @@
 let isEditMode = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Dostęp tylko MENADZER
+    
     checkSession(['MENADZER']);
     loadFlights();
     loadSamoloty();
 });
 
-/* ============================
-   FORMAT DATY
-============================ */
+
 function formatDatePL(dateString) {
     if (!dateString) return '—';
 
@@ -23,9 +21,7 @@ function formatDatePL(dateString) {
     return `${day}.${month}.${year}`;
 }
 
-/* ============================
-   SAMOLOTY
-============================ */
+
 async function loadSamoloty() {
     const select = document.getElementById('samolotSelect');
     if (!select) return;
@@ -36,7 +32,7 @@ async function loadSamoloty() {
         const samoloty = await apiFetch('/samoloty');
 
         samoloty
-            .filter(s => s.status === true) // ✅ tylko aktywne
+            .filter(s => s.status === true) 
             .forEach(s => {
                 select.innerHTML += `
                     <option value="${s.id}">
@@ -51,9 +47,7 @@ async function loadSamoloty() {
 }
 
 
-/* ============================
-   LISTA LOTÓW
-============================ */
+
 async function loadFlights() {
     const body = document.getElementById('flightsBody');
     if (!body) return;
@@ -130,9 +124,7 @@ async function loadFlights() {
     }
 }
 
-/* ============================
-   FORMULARZ
-============================ */
+
 function showFlightForm() {
     const section = document.getElementById('flightFormSection');
     if (!section) return;
@@ -148,9 +140,7 @@ function hideFlightForm() {
     section.style.display = 'none';
 }
 
-/* ============================
-   DODAWANIE LOTU
-============================ */
+
 function addFlight() {
     isEditMode = false;
 
@@ -163,12 +153,7 @@ function addFlight() {
     showFlightForm();
 }
 
-/* ============================
-   ZAPIS LOTU (ADD + EDIT)
-============================ */
-/* ============================
-   ZAPIS LOTU (ADD + EDIT)
-============================ */
+
 async function saveFlight() {
     const id = document.getElementById('flightId').value;
 
@@ -196,7 +181,7 @@ async function saveFlight() {
         return;
     }
 
-    // 🔴 BLOKADA: samolot nieaktywny
+    
     if (!isEditMode) {
         const samolotId = Number(document.getElementById('samolotSelect').value);
         const samoloty = await apiFetch('/samoloty');
@@ -250,9 +235,7 @@ async function saveFlight() {
     }
 }
 
-/* ============================
-   EDYCJA LOTU
-============================ */
+
 async function editFlight(id) {
     isEditMode = true;
 
@@ -290,9 +273,7 @@ async function editFlight(id) {
     showFlightForm();
 }
 
-/* ============================
-   USUWANIE LOTU
-============================ */
+
 async function deleteFlight(id) {
     if (!confirm('Usunąć lot?')) return;
 
@@ -305,9 +286,7 @@ async function deleteFlight(id) {
     }
 }
 
-/* ============================
-   IATA
-============================ */
+
 function generateIataCode(city) {
     return city
         .toUpperCase()
@@ -316,9 +295,7 @@ function generateIataCode(city) {
         .padEnd(3, 'X');
 }
 
-/* ============================
-   LOTNISKA
-============================ */
+
 async function getOrCreateAirport(city, country) {
     const airports = await apiFetch('/lotniska');
 
@@ -340,9 +317,7 @@ async function getOrCreateAirport(city, country) {
     });
 }
 
-/* ============================
-   TRASY
-============================ */
+
 async function getOrCreateRoute(fromId, toId) {
     const trasy = await apiFetch('/trasy');
 
@@ -363,9 +338,7 @@ async function getOrCreateRoute(fromId, toId) {
     });
 }
 
-/* ============================
-   TRASA (ADD + EDIT)
-============================ */
+
 async function prepareRoute() {
     const fromCity = document.getElementById('fromCity').value.trim();
     const fromCountry = document.getElementById('fromCountry').value.trim();

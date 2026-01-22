@@ -1,15 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Dostęp tylko MENADZER
+    
     checkSession(['MENADZER']);
     loadPlanes();
 });
 
-// POPRAWIONE – zgodne z HTML i generatorem (podzielne przez 6)
+
 const DOZWOLONE_MIEJSCA = [90, 120, 150, 180];
 
-/* ============================
-   LISTA SAMOLOTÓW
-============================ */
+
 async function loadPlanes() {
     const body = document.getElementById('planesBody');
     if (!body) {
@@ -59,9 +57,7 @@ async function loadPlanes() {
     }
 }
 
-/* ============================
-   ZAPIS SAMOLOTU (ADD + EDIT)
-============================ */
+
 async function savePlane() {
     const id = document.getElementById('planeId').value;
     const model = document.getElementById('model').value.trim();
@@ -116,9 +112,7 @@ async function savePlane() {
     }
 }
 
-/* ============================
-   EDYCJA SAMOLOTU
-============================ */
+
 async function editPlane(id) {
     try {
         const planes = await apiFetch('/samoloty');
@@ -146,9 +140,7 @@ async function editPlane(id) {
     }
 }
 
-/* ============================
-   DEZAKTYWACJA SAMOLOTU
-============================ */
+
 async function deletePlane(id, model) {
     const confirmDelete = confirm(
         `Czy na pewno chcesz dezaktywować samolot:\n\n${model}?`

@@ -16,11 +16,10 @@
 </head>
 <body>
 
-<!-- =========================
-     TOP BAR
-========================= -->
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/cashier/dashboard">Lotnisko</a>
+    </div>
 
     <div class="top-actions">
         <button type="button" class="btn-secondary" onclick="goBack()">
@@ -36,9 +35,6 @@
     </div>
 </header>
 
-<!-- =========================
-     CONTENT
-========================= -->
 <main class="container">
 
     <section class="card tickets-management">
@@ -81,9 +77,7 @@
 
 </main>
 
-<!-- =========================
-     SCRIPTS
-========================= -->
+
 <script src="/js/app.js"></script>
 <script src="/js/cashier-tickets.js"></script>
 

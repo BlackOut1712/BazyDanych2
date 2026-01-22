@@ -18,7 +18,7 @@ return new class extends Migration {
                 ->constrained('lotniska')
                 ->cascadeOnDelete();
 
-            $table->integer('czas_lotu'); // w minutach
+            $table->integer('czas_lotu'); 
 
             $table->timestamps();
 

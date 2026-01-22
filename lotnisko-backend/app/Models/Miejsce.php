@@ -21,13 +21,13 @@ class Miejsce extends Model
         'przejscie' => 'boolean',
     ];
 
-    // Miejsce należy do jednego LOTU
+
     public function lot()
     {
         return $this->belongsTo(Lot::class);
     }
 
-    // Jedno miejsce może mieć MAKSYMALNIE jedną rezerwację
+    
     public function rezerwacja()
     {
         return $this->hasOne(Rezerwacja::class);

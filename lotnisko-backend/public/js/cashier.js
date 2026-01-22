@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // Dostęp: KASJER + MENADZER
+    
     checkSession(['KASJER', 'MENADZER']);
 
     const body = document.getElementById('reservationsBody');
@@ -69,9 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-/* ============================
-   NAWIGACJA (LARAVEL ROUTES)
-============================ */
+
 
 function sellTicket(reservationId) {
     if (!reservationId) {

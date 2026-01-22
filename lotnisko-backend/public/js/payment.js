@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // symulowana cena (na razie stała)
-    const price = 350;
+
 
     document.getElementById('paymentSummary').innerHTML = `
         <p><strong>Numer rezerwacji:</strong> ${reservation.id}</p>
@@ -23,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const method = document.querySelector('input[name="method"]:checked').value;
 
         try {
-            //zakładamy, że bilet już istnieje
+          
             const bilet = await apiFetch(`/bilety?rezerwacja_id=${reservation.id}`);
 
             if (!bilet.length) {

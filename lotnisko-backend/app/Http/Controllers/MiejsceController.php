@@ -9,8 +9,7 @@ use Illuminate\Http\Request;
 
 class MiejsceController extends Controller
 {
-    // POST /api/miejsca
-    // Menadżer tworzy miejsca ręcznie dla KONKRETNEGO LOTU
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -27,7 +26,7 @@ class MiejsceController extends Controller
         );
     }
 
-    // GET /api/loty/{lot_id}/miejsca
+
     public function miejscaDlaLotu($lot_id)
     {
         $lot = Lot::findOrFail($lot_id);

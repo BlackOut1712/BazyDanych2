@@ -61,6 +61,6 @@ async function refundBlikCashier() {
     } catch (e) {
         console.error(e);
         result.innerHTML =
-            `<p style="color:red">❌ Nieprawidłowy PIN klienta</p>`;
+            `<p style="color:red"> Nieprawidłowy PIN klienta</p>`;
     }
 }

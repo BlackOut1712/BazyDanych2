@@ -4,9 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BiletController;
 use Illuminate\Http\Request;
 
-/* =========================
-   API – BILETY (WEB → API)
-========================= */
+
 Route::get('/api/bilety/moje', function (Request $request) {
 
     $user = session('user');
@@ -15,36 +13,28 @@ Route::get('/api/bilety/moje', function (Request $request) {
         return response()->json([], 200);
     }
 
-    // 🔥 WSTRZYKUJEMY NAGŁÓWKI JAK API
+    
     $request->headers->set('X-User-Role', 'CLIENT');
     $request->headers->set('X-Client-Id', $user['id']);
 
-    // ⏩ DELEGACJA DO KONTROLERA
+    
     return app(BiletController::class)->moje($request);
 });
 
-/* =========================
-   TEST / BLIK (GLOBAL)
-========================= */
+
 Route::get('/blik', function () {
     return view('blik');
 })->name('blik');
 
-/* =========================
-   STRONA GŁÓWNA
-========================= */
+
 Route::view('/', 'index');
 Route::redirect('/index', '/');
 
-/* =========================
-   AUTH
-========================= */
+
 Route::view('/login', 'login');
 Route::view('/register', 'register');
 
-/* =========================
-   CASHIER
-========================= */
+
 Route::prefix('cashier')->group(function () {
 
     Route::view('/dashboard', 'Cashier.dashboard')->name('kasjer.dashboard');
@@ -53,19 +43,14 @@ Route::prefix('cashier')->group(function () {
     Route::view('/menagment', 'Cashier.menagment');
     Route::view('/change-seat', 'Cashier.change-seat');
 
-    // 🔍 WYSZUKIWARKA LOTÓW – KASJER
+   
     Route::view('/search', 'Cashier.search')->name('cashier.search');
 
-    /* =========================
-       🧾 FAKTURA (PDF – WEB)
-       → proxy do API (rozwiązuje 401)
-    ========================= */
+
     Route::get('/faktura/{id}', [BiletController::class, 'fakturaWeb']);
 });
 
-/* =========================
-   ADMIN
-========================= */
+
 Route::prefix('admin')->group(function () {
     Route::view('/dashboard', 'Admin.dashboard');
     Route::view('/flights', 'Admin.flights');
@@ -75,9 +60,7 @@ Route::prefix('admin')->group(function () {
     Route::view('/stats', 'Admin.stats');
 });
 
-   /* =========================
-      CLIENT
-   ========================= */
+
    Route::prefix('client')->group(function () {
 
       Route::view('/dashboard', 'client.dashboard');
@@ -87,23 +70,21 @@ Route::prefix('admin')->group(function () {
       Route::view('/seats', 'client.seats');
       Route::view('/search', 'client.search')->name('client.search');
 
-      // ✅ ZMIANA MIEJSCA (KLIENT)
+      
       Route::get('/client-change-seat', function () {
          return view('client.client-change-seat');
       })->name('client.change-seat');
 
-      // ✅ ZWROT (KLIENT)
+     
       Route::view('/refund', 'client.refund')->name('client.refund');
       Route::get('/profile', function () {
          return view('client.profile');
       });
 
    
-    /* =========================
-       ✅ BLIK – CLIENT
-    ========================= */
+   
     Route::get('/blik-client', function () {
-        return view('Client.blik-client'); // 🔥 POPRAWIONE
+        return view('Client.blik-client'); 
     })->name('client.blik');
 
     /* =================================================

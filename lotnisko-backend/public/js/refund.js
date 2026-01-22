@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Dostęp: KASJER + MENADZER
+    
     checkSession(['KASJER', 'MENADZER']);
 });
 
-/* ============================
-   ZWROT BILETU
-============================ */
+
 async function refund() {
     const numerBiletu = document.getElementById('numerBiletu')?.value.trim();
     const pin = document.getElementById('pin')?.value.trim();
@@ -20,7 +18,7 @@ async function refund() {
         return;
     }
 
-    // ✅ sprawdzamy tylko pracownika (sesja)
+    
     const user = getUser?.();
 
     if (!user || !user.id) {
@@ -30,12 +28,6 @@ async function refund() {
     }
 
     try {
-        /**
-         * 🔥 KLUCZOWA ZMIANA:
-         * - PIN = hasło KLIENTA
-         * - klient jest ustalany w backendzie po numerze biletu
-         * - NIE wysyłamy client_id
-         */
         const res = await apiFetch('/bilety/zwrot', {
             method: 'POST',
             body: JSON.stringify({
@@ -65,15 +57,13 @@ async function refund() {
 
         result.innerHTML = `
             <p style="color:red">
-                ❌ ${msg}
+                 ${msg}
             </p>
         `;
     }
 }
 
-/* ============================
-   POWRÓT DO DASHBOARDU
-============================ */
+
 function goBack() {
     window.location.href = '/cashier/dashboard';
 }

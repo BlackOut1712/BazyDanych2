@@ -1,14 +1,14 @@
-// e-mail
+
 function isValidEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
-// PIN – dokładnie 6 cyfr
+
 function isValidPin(value) {
     return /^\d{6}$/.test(value);
 }
 
-// hasło – min 6 znaków, litera + cyfra
+
 function isValidPassword(value) {
     return (
         value.length >= 6 &&
@@ -21,24 +21,19 @@ function startSession(role, user, remember) {
     const storage = remember ? localStorage : sessionStorage;
     const obsoleteStorage = remember ? sessionStorage : localStorage;
 
-    // czyścimy stare dane
+   
     ['role', 'user', 'user_id', 'user_role', 'lastActivity', 'remember']
         .forEach(key => obsoleteStorage.removeItem(key));
 
-    /* ===============================
-       🔐 PODSTAWOWE DANE SESJI
-    ================================ */
+
     storage.setItem('role', role);
-    storage.setItem('user_role', role); // 🔥 DLA WEB / PDF / FAKTUR
+    storage.setItem('user_role', role); 
     storage.setItem('user', JSON.stringify(user));
     storage.setItem('lastActivity', Date.now().toString());
 
-    /* ===============================
-       👤 ID UŻYTKOWNIKA (KLUCZOWE)
-       ✔ backend / historia / bilety
-    ================================ */
+
     if (user) {
-        // obsługa obu wariantów (bez psucia innych)
+        
         if (user.id) {
             storage.setItem('user_id', user.id);
         } else if (user.klient_id) {
@@ -61,7 +56,7 @@ async function login() {
         return;
     }
 
-    // WALIDACJA FRONTEND
+    
     if (isValidEmail(identifier)) {
         if (secret.length < 6) {
             alert('Hasło musi mieć co najmniej 6 znaków');
@@ -104,7 +99,7 @@ async function login() {
         const role = data.role.toUpperCase();
         const user = data.user;
 
-        // START SESJI
+        
         startSession(role, user, remember);
         console.log('Zalogowano jako:', role, user);
 

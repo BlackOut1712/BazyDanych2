@@ -11,28 +11,27 @@ return new class extends Migration
         Schema::create('lots', function (Blueprint $table) {
             $table->id();
 
-            // data i godzina lotu
+            
             $table->date('data');
             $table->time('godzina');
 
-            // status lotu
-            // AKTYWNY | ODWOLANY | ZAKONCZONY
+            
             $table->string('status', 20)->default('AKTYWNY');
 
-            // trasa lotu
+           
             $table->foreignId('trasa_id')
                 ->constrained('trasas')
                 ->cascadeOnDelete();
 
-            // samolot wykonujący lot (KLUCZOWE!)
+           
             $table->foreignId('samolot_id')
                 ->constrained('samolots')
                 ->restrictOnDelete();
 
-            // created_at / updated_at
+            
             $table->timestamps();
 
-            // (opcjonalnie) indeks przyspieszający zapytania
+            
             $table->index(['data', 'status']);
         });
     }

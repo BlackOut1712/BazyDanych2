@@ -1,12 +1,8 @@
-/* ============================
-   API URL (fallback)
-============================ */
+
 const API_URL = window.location.origin + '/api';
 
 
-/* ============================
-   WALIDATORY
-============================ */
+
 function isOnlyDigits(value) {
     return /^\d+$/.test(value);
 }
@@ -20,12 +16,10 @@ function isValidPesel(pesel) {
 }
 
 function isValidPhone(phone) {
-    return /^\d{9}$/.test(phone); // 9 cyfr – standard PL
+    return /^\d{9}$/.test(phone); 
 }
 
-/* ============================
-   REJESTRACJA KLIENTA
-============================ */
+
 async function register() {
     try {
         const imie = document.getElementById('imie').value.trim();
@@ -67,9 +61,6 @@ async function register() {
             return;
         }
 
-        /* ============================
-           REJESTRACJA
-        ============================ */
         const registerResponse = await fetch(`${API_URL}/klienci`, {
             method: 'POST',
             headers: {
@@ -93,9 +84,7 @@ async function register() {
             return;
         }
 
-        /* ============================
-           AUTO-LOGIN (ZGODNY Z AuthController)
-        ============================ */
+
         const loginResponse = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: {
@@ -116,9 +105,7 @@ async function register() {
             return;
         }
 
-        /* ============================
-           SESJA (BEZ TOKENA – JAK MASZ W SYSTEMIE)
-        ============================ */
+
         localStorage.setItem('userRole', loginData.role);
         localStorage.setItem('userId', loginData.user.id);
 

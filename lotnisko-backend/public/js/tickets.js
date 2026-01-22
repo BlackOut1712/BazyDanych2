@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // 🔐 tylko klient
+    
     checkSession(['CLIENT']);
     
     const user = getUser();
@@ -37,17 +37,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        /* ============================
-           🕒 DATA DZISIEJSZA (LOKALNA)
-        ============================ */
+
         const today = new Date();
-        const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+        const todayStr = today.toISOString().slice(0, 10); 
 
         const statusyAktywne = ['OPLACONY', 'POTWIERDZONA', 'NOWY'];
 
-        /* ============================
-           ✅ FILTR: STATUS + DATA
-        ============================ */
+
         const bilety = data.filter(b => {
 
             if (!statusyAktywne.includes(b.status)) {
@@ -57,7 +53,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const lotData = b?.rezerwacja?.miejsce?.lot?.data;
             if (!lotData) return false;
 
-            // 🔥 KLUCZ: porównanie STRING ↔ STRING
             return lotData >= todayStr;
         });
 
@@ -83,25 +78,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             let dataTekst = '—';
 
             if (lot?.data) {
-                let date;
+                
+                const dateOnly = lot.data.split('T')[0];
+                const [y, m, d] = dateOnly.split('-');
 
-                // ✅ jeśli backend zwrócił pełne ISO (z T)
-                if (lot.data.includes('T')) {
-                    date = new Date(lot.data);
-                }
-                // ✅ jeśli data + osobna godzina
-                else if (lot.godzina) {
-                    date = new Date(`${lot.data}T${lot.godzina}`);
-                }
+                dataTekst = `${d}.${m}.${y}`;
 
-                if (date && !isNaN(date)) {
-                    dataTekst = date.toLocaleString('pl-PL', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                if (lot.godzina) {
+                    dataTekst += ` ${lot.godzina.slice(0,5)}`;
                 }
             }
 
@@ -118,18 +102,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </td>
                 <td>
                     <button class="action-btn" onclick="goToChangeSeat(${b.id})">
-                        ✈️ Zmień miejsce
+                         Zmień miejsce
                     </button>
 
                     <button class="action-btn" onclick="goToRefund(${b.id})">
-                        💸 Zwrot
+                         Zwrot
                     </button>
 
                     ${
                         b.status !== 'OPLACONY'
                             ? `<button class="action-btn pay-btn"
                                  onclick="goToPayment(${b.id})">
-                                 💳 Zapłać
+                                 Zapłać
                                </button>`
                             : ''
                     }
@@ -144,16 +128,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         container.innerHTML = `
             <tr>
                 <td colspan="5" style="color:red">
-                    ❌ Błąd pobierania biletów
+                     Błąd pobierania biletów
                 </td>
             </tr>
         `;
     }
 });
 
-/* ============================
-   AKCJE
-============================ */
+
 
 window.goToChangeSeat = function (biletId) {
     localStorage.setItem('changeSeatBiletId', biletId);

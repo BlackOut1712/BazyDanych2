@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 
 class LotniskoController extends Controller
 {
-    // GET /api/lotniska
+    
     public function index()
     {
         return response()->json(Lotnisko::all());
     }
 
-    // POST /api/lotniska
+    
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -28,7 +28,7 @@ class LotniskoController extends Controller
         return response()->json($lotnisko, 201);
     }
 
-    // GET /api/lotniska/{id}
+    
     public function show($id)
     {
         return response()->json(
@@ -36,7 +36,7 @@ class LotniskoController extends Controller
         );
     }
 
-    // PUT /api/lotniska/{id}
+    
     public function update(Request $request, $id)
     {
         $lotnisko = Lotnisko::findOrFail($id);

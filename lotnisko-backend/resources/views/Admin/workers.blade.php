@@ -15,7 +15,9 @@
 
 <!-- GÓRNY PASEK -->
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/cashier/dashboard">Lotnisko</a>
+    </div>
     <nav class="top-actions">
         
         <button class="btn-secondary" onclick="goBack()">

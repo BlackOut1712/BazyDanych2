@@ -16,9 +16,11 @@
 </head>
 <body>
 
-<!-- TOP BAR -->
+
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/client/dashboard">Lotnisko</a>
+    </div>
     
     <div class="top-actions">
         <span class="role-label">Klient</span>

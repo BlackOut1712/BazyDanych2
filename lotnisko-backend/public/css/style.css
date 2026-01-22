@@ -2204,7 +2204,7 @@ body {
     border: 2px solid #93c5fd;
 
     font-weight: 400;
-    text-align: center;         /* 🔥 centralizacja tekstu */
+    text-align: center;         
     transition: border-color 0.2s, box-shadow 0.2s;
     letter-spacing: normal; 
 }
@@ -2388,9 +2388,7 @@ body {
     border-radius: 8px;
     cursor: pointer;
 }
-/* ===============================
-   PROFIL – UKŁAD DWUKOLUMNOWY
-================================ */
+
 
 .profile-grid {
     display: grid;
@@ -2400,15 +2398,13 @@ body {
     margin-top: 30px;
 }
 
-/* responsywność */
+
 @media (max-width: 900px) {
     .profile-grid {
         grid-template-columns: 1fr;
     }
 }
-/* =========================
-   WORKERS – NOWY UKŁAD FORM
-========================= */
+
 
 .workers-page .form-grid {
     display: grid;
@@ -2416,12 +2412,12 @@ body {
     gap: 16px 20px;
 }
 
-/* wszystkie inputy równe */
+
 .workers-page .form-grid > input {
     width: 100%;
 }
 
-/* ROLA NA CAŁĄ SZEROKOŚĆ */
+
 .workers-page .role-field {
     grid-column: 1 / -1;
 }
@@ -2431,7 +2427,7 @@ body {
     height: 42px;
 }
 
-/* HASŁO – JEDNA KOMÓRKA GRIDU */
+
 .workers-page .password-field {
     display: flex;
     flex-direction: column;
@@ -2441,7 +2437,7 @@ body {
     width: 100%;
 }
 
-/* WSKAZÓWKI POD HASŁEM */
+
 .workers-page .password-hint {
     margin-top: 6px;
     font-size: 13px;
@@ -2463,8 +2459,8 @@ body {
     align-items: start;
 }
 .loty .card {
-    margin-bottom: 40px; /* lub np. 40px */
+    margin-bottom: 40px; 
 }
 .samoloty .card {
-    margin-bottom: 40px; /* lub np. 40px */
+    margin-bottom: 40px; 
 }

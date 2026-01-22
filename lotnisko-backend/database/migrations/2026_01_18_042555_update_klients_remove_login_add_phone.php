@@ -9,12 +9,12 @@ return new class extends Migration {
     {
         Schema::table('klients', function (Blueprint $table) {
 
-            // usuń login jeśli istnieje
+            
             if (Schema::hasColumn('klients', 'login')) {
                 $table->dropColumn('login');
             }
 
-            // dodaj numer telefonu jeśli nie istnieje
+            
             if (!Schema::hasColumn('klients', 'numer_telefonu')) {
                 $table->string('numer_telefonu', 9)->unique()->after('pesel');
             }

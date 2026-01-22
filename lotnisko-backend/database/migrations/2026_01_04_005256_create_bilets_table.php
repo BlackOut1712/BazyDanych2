@@ -10,12 +10,12 @@ return new class extends Migration {
         Schema::create('bilets', function (Blueprint $table) {
             $table->id();
 
-            // dane pasażera
+            
             $table->string('imie_pasazera', 100);
             $table->string('nazwisko_pasazera', 100);
             $table->string('pesel_pasazera', 11);
 
-            // powiązania
+            
             $table->foreignId('rezerwacja_id')
                 ->constrained('rezerwacjes')
                 ->cascadeOnDelete();
@@ -28,16 +28,16 @@ return new class extends Migration {
                 ->constrained('miejscas')
                 ->cascadeOnDelete();
 
-            // identyfikacja biletu
+           
             $table->string('numer_biletu', 20)->unique();
 
-            // data wystawienia
+            
             $table->date('data_wystawienia');
 
-            // status: NOWY / OPLACONY / ZWROCONY
+            
             $table->string('status', 20)->default('NOWY');
 
-            // jedno miejsce tylko raz na dany lot
+            
             $table->unique(['lot_id', 'miejsce_id']);
 
             $table->timestamps();

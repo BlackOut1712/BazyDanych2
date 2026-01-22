@@ -1,12 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 🔐 tylko MENADZER
+    
     checkSession(['MENADZER']);
     loadStats();
 });
 
-/* ============================
-   ŁADOWANIE STATYSTYK
-============================ */
+
 async function loadStats() {
     const periodSelect = document.getElementById('periodSelect');
     const period = periodSelect ? periodSelect.value : 'month';
@@ -26,7 +24,7 @@ async function loadStats() {
 
         const fromDate = getFromDate(period);
 
-        /* ===== FILTROWANIE ===== */
+        
 
         const filteredFlights = loty.filter(l =>
             l.data && isAfter(l.data, fromDate)
@@ -46,13 +44,13 @@ async function loadStats() {
             p.created_at && isAfter(p.created_at, fromDate)
         );
 
-        /* ===== LICZBY ===== */
+      
 
         setText('statFlights', filteredFlights.length);
         setText('statReservations', filteredReservations.length);
         setText('statTickets', filteredTickets.length);
 
-        /* ===== PRZYCHÓD ===== */
+       
 
         const revenue = filteredPayments.reduce(
             (sum, p) => sum + Number(p.kwota || 0),
@@ -64,7 +62,7 @@ async function loadStats() {
             revenue.toLocaleString('pl-PL') + ' zł'
         );
 
-        /* ===== NAJPOPULARNIEJSZE TRASY ===== */
+       
 
         renderPopularFlights(filteredTickets);
 
@@ -74,9 +72,7 @@ async function loadStats() {
     }
 }
 
-/* ============================
-   NAJPOPULARNIEJSZE TRASY
-============================ */
+
 function renderPopularFlights(bilety) {
     const body = document.getElementById('popularFlightsBody');
     if (!body) return;
@@ -118,9 +114,7 @@ function renderPopularFlights(bilety) {
     });
 }
 
-/* ============================
-   OKRES CZASU
-============================ */
+
 function getFromDate(period) {
     const d = new Date();
 
@@ -136,9 +130,7 @@ function isAfter(dateString, fromDate) {
     return new Date(dateString) >= fromDate;
 }
 
-/* ============================
-   POMOCNICZE
-============================ */
+
 function setText(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = value;

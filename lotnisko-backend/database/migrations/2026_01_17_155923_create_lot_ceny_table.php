@@ -14,20 +14,20 @@ return new class extends Migration
         Schema::create('lot_ceny', function (Blueprint $table) {
             $table->id();
 
-            // powiązanie z lotem
+            
             $table->foreignId('lot_id')
                 ->constrained('lots')
                 ->cascadeOnDelete();
 
-            // klasa miejsca
+           
             $table->enum('klasa', ['ECONOMY', 'BUSINESS']);
 
-            // cena dla danej klasy i lotu
+            
             $table->decimal('cena', 8, 2);
 
             $table->timestamps();
 
-            // 🔒 jedna cena na jedną klasę w danym locie
+            
             $table->unique(['lot_id', 'klasa']);
         });
     }

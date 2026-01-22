@@ -9,9 +9,8 @@
 
 <header class="top-bar">
     <div class="logo">
-        <a href="/dashboard">Lotnisko</a>
+        <a href="/cashier/dashboard">Lotnisko</a>
     </div>
-
     <div class="top-actions">
         <button class="btn-secondary" onclick="goBack()">
             ← Wróć do panelu menadżera

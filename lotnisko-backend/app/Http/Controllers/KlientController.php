@@ -16,13 +16,13 @@ class KlientController extends Controller
             abort(403, 'Brak uprawnień');
         }
     }
-    // GET /api/klienci
+    
     public function index()
     {
         return response()->json(Klient::all());
     }
     
-    // POST /api/klienci
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -41,7 +41,7 @@ class KlientController extends Controller
         return response()->json($klient, 201);
     }
 
-    // GET /api/klienci/{id}
+    
     public function show($id)
     {
         return response()->json(Klient::findOrFail($id));
@@ -79,7 +79,7 @@ class KlientController extends Controller
             $klient->numer_telefonu = $request->numer_telefonu;
         }
 
-        // 🔐 zmiana hasła (jeśli podane)
+        
         if ($request->current_password && $request->new_password) {
             if (!Hash::check($request->current_password, $klient->haslo)) {
                 return response()->json([

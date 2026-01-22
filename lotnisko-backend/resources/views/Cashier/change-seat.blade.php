@@ -16,7 +16,9 @@
 <body>
 
 <header class="top-bar">
-    <div class="logo">Lotnisko</div>
+    <div class="logo">
+        <a href="/cashier/dashboard">Lotnisko</a>
+    </div>
     <div class="actions">
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
     </div>

@@ -1,151 +1,111 @@
 function payBlik() {
     const code = document.getElementById('blikCode').value.trim();
     const result = document.getElementById('blikResult');
+    const payBtn = document.getElementById('payBtn'); // jeśli masz przycisk
 
-    // =========================
-    // WALIDACJA KODU
-    // =========================
     if (!/^\d{6}$/.test(code)) {
-        result.innerHTML =
-            `<p style="color:red">Kod BLIK musi mieć 6 cyfr</p>`;
+        result.innerHTML = `<p style="color:red">Kod BLIK musi mieć 6 cyfr</p>`;
         return;
     }
 
-    result.innerHTML = `<p>⏳ Przetwarzanie płatności...</p>`;
+    
+    if (payBtn) payBtn.disabled = true;
+    result.innerHTML = `<p> Przetwarzanie płatności...</p>`;
 
-    // =========================
-    // SYMULACJA BANKU
-    // =========================
     setTimeout(async () => {
+        result.innerHTML = `<p style="color:green">✔ Płatność BLIK zaakceptowana</p>`;
 
-        result.innerHTML =
-            `<p style="color:green">✔ Płatność BLIK zaakceptowana</p>`;
-
-        // =========================
-        // SPRAWDZENIE SESJI
-        // =========================
         const role = getSessionItem('role');
         if (role !== 'CLIENT') {
-            alert('Błąd: tylko klient może opłacić bilet');
+            alert('Tylko klient może opłacić bilet');
             window.location.href = '/login';
             return;
         }
 
-        let user = null;
-        try {
-            user = JSON.parse(getSessionItem('user'));
-        } catch (e) {}
-
+        let user;
+        try { user = JSON.parse(getSessionItem('user')); } catch {}
         if (!user?.id) {
             alert('Brak danych klienta');
             window.location.href = '/login';
             return;
         }
 
-        // =========================
-        // 🔑 ROZPOZNANIE TRYBU
-        // =========================
-        const existingBiletId = localStorage.getItem('pay_bilet_id');
-        const rezerwacjaId = localStorage.getItem('blik_rezerwacja_id');
-
-        // =========================
-        // DANE PASAŻERA (DO NOWEGO)
-        // =========================
-        const imie_pasazera =
-            localStorage.getItem('passengerFirstName') ||
-            user.imie ||
-            '—';
-
-        const nazwisko_pasazera =
-            localStorage.getItem('passengerLastName') ||
-            user.nazwisko ||
-            '—';
-
-        const pesel_pasazera =
-            localStorage.getItem('passengerPesel') ||
-            user.pesel ||
-            '00000000000';
-
-        try {
-
-            // =====================================
-            // 🔁 ISTNIEJĄCY BILET → OPŁATA
-            // =====================================
-            if (existingBiletId) {
-
-                const response = await fetch(
-                    `${API_URL}/bilety/${existingBiletId}/pay`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-User-Role': 'CLIENT',
-                            'X-Client-Id': user.id
-                        },
-                        body: JSON.stringify({
-                            bilet_id: existingBiletId
-                        })
-                    });
-
-                if (!response.ok) {
-                    throw new Error('Błąd opłacania biletu');
-                }
-
-                localStorage.removeItem('pay_bilet_id');
-            }
-
-            // =====================================
-            // 🆕 NOWA REZERWACJA → NOWY BILET
-            // =====================================
-            else {
-
-                if (!rezerwacjaId) {
-                    alert('Błąd: brak rezerwacji do opłacenia');
-                    window.location.href = '/client/dashboard';
-                    return;
-                }
-                const response = await fetch(
-                    `${API_URL}/bilety/client`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-User-Role': 'CLIENT',
-                            'X-Client-Id': user.id
-                        },
-                        body: JSON.stringify({
-                            rezerwacja_id: rezerwacjaId,
-                            imie_pasazera,
-                            nazwisko_pasazera,
-                            pesel_pasazera
-                        })
-                    }
-                );
         
+        localStorage.removeItem('pay_bilet_id');
 
-                if (!response.ok) {
-                    throw new Error('Błąd zapisu biletu');
-                }
-
-                // cleanup danych nowej rezerwacji
-                localStorage.removeItem('blik_rezerwacja_id');
-                localStorage.removeItem('passengerFirstName');
-                localStorage.removeItem('passengerLastName');
-                localStorage.removeItem('passengerPesel');
-            }
-
-        } catch (err) {
-            console.error(err);
-            alert('Płatność OK, ale błąd po stronie serwera');
+        const rezerwacjaId = localStorage.getItem('blik_rezerwacja_id');
+        if (!rezerwacjaId) {
+            alert('Rezerwacja wygasła lub została anulowana.');
+            window.location.href = '/client/dashboard';
             return;
         }
 
-        // =========================
-        // PRZEKIEROWANIE
-        // =========================
-        setTimeout(() => {
-            window.location.href = '/client/tickets';
-        }, 1200);
+        const imie_pasazera =
+            localStorage.getItem('passengerFirstName') || user.imie || '—';
+        const nazwisko_pasazera =
+            localStorage.getItem('passengerLastName') || user.nazwisko || '—';
+        const pesel_pasazera =
+            localStorage.getItem('passengerPesel') || user.pesel || '00000000000';
 
+        try {
+           
+            const ticketRes = await fetch(`${API_URL}/bilety/client`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Role': 'CLIENT',
+                    'X-Client-Id': user.id
+                },
+                body: JSON.stringify({
+                    rezerwacja_id: rezerwacjaId,
+                    imie_pasazera,
+                    nazwisko_pasazera,
+                    pesel_pasazera
+                })
+            });
+
+            if (!ticketRes.ok) {
+                if (ticketRes.status === 409) {
+                    alert('Rezerwacja nieaktywna. Wybierz miejsce ponownie.');
+                    window.location.href = '/client/dashboard';
+                    return;
+                }
+                throw new Error('Błąd zapisu biletu');
+            }
+
+            const bilet = await ticketRes.json();
+
+           
+            const payRes = await fetch(`${API_URL}/bilety/${bilet.id}/pay`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-Role': 'CLIENT',
+                    'X-Client-Id': user.id
+                }
+            });
+
+            if (!payRes.ok) {
+                if (payRes.status === 409) {
+                    
+                    window.location.href = '/client/tickets';
+                    return;
+                }
+                throw new Error('Błąd zapisu płatności');
+            }
+
+            
+            localStorage.removeItem('blik_rezerwacja_id');
+            localStorage.removeItem('passengerFirstName');
+            localStorage.removeItem('passengerLastName');
+            localStorage.removeItem('passengerPesel');
+
+            window.location.href = '/client/tickets';
+
+        } catch (err) {
+            console.error(err);
+            alert('Wystąpił błąd systemu');
+            if (payBtn) payBtn.disabled = false;
+        }
     }, 1200);
 }
