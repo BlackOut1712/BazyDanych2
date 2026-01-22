@@ -145,6 +145,21 @@ class LotController extends Controller
                 abort(409, 'Nie można zmienić samolotu po wygenerowaniu miejsc');
             }
         }
+        if (
+            array_key_exists('status', $data) &&
+            strtoupper($data['status']) !== 'AKTYWNY'
+        ) {
+            $maRezerwacje = Rezerwacja::whereHas('miejsce', function ($q) use ($lot) {
+                $q->where('lot_id', $lot->id);
+            })->exists();
+
+            if ($maRezerwacje) {
+                abort(
+                    409,
+                    'Nie można dezaktywować lotu, do którego istnieją rezerwacje'
+                );
+            }
+        }
 
         DB::transaction(function () use ($lot, $data) {
 
