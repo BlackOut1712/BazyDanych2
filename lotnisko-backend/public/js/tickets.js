@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     container.innerHTML = `
         <tr>
             <td colspan="5" class="table-loading">
-                ⏳ Pobieranie biletów...
+                 Pobieranie biletów...
             </td>
         </tr>
     `;

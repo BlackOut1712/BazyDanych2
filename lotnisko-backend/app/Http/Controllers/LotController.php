@@ -13,28 +13,53 @@ use Illuminate\Support\Facades\DB;
 class LotController extends Controller
 {
 
-    public function index()
-    {
-        $loty = Lot::with([
-            'trasa.lotniskoWylotu',
-            'trasa.lotniskoPrzylotu',
-            'samolot',
-            'ceny'
-        ])
-        ->whereRaw(
-            "(lots.data + lots.godzina::time) > ?",
-            [now()]
-        )
+public function index(Request $request)
+{
+    $query = Lot::with([
+        'trasa.lotniskoWylotu',
+        'trasa.lotniskoPrzylotu',
+        'samolot',
+        'ceny'
+    ])
+    
+    ->whereRaw(
+        "(lots.data + lots.godzina::time) > ?",
+        [now()]
+    )
+    ->where('status', 'AKTYWNY');
+
+    
+    if ($request->filled('data')) {
+        $query->whereDate('data', $request->data);
+    }
+
+    if ($request->filled('from')) {
+        $query->whereHas('trasa.lotniskoWylotu', function ($q) use ($request) {
+            $q->whereRaw('LOWER(miasto) LIKE ?', ['%' . strtolower($request->from) . '%']);
+        });
+    }
+
+    if ($request->filled('to')) {
+        $query->whereHas('trasa.lotniskoPrzylotu', function ($q) use ($request) {
+            $q->whereRaw('LOWER(miasto) LIKE ?', ['%' . strtolower($request->to) . '%']);
+        });
+    }
+
+    
+    $loty = $query
         ->orderBy('data')
         ->orderBy('godzina')
         ->get();
 
-        $loty->each(function ($lot) {
-            $lot->cena = $lot->ceny->min('cena');
-        });
+    
+    $loty->each(fn ($lot) =>
+        $lot->cena = $lot->ceny->min('cena')
+    );
 
-        return response()->json($loty);
-    }
+    return response()->json($loty);
+}
+
+
 
 
     public function store(Request $request)

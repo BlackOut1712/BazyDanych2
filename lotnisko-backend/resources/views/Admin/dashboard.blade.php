@@ -7,20 +7,20 @@
 </head>
 <body>
 
-<!-- GÓRNY PASEK -->
+
 <header class="top-bar">
     <div class="logo">
-        <a href="/cashier/dashboard">Lotnisko</a>
+        <a href="/admin/dashboard">Lotnisko</a>
     </div>
 
-    <!-- PRAWA STRONA -->
+    
     <div class="top-actions">
         <span class="role-label">Menadżer</span>
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
     </div>
 </header>
 
-<!-- GŁÓWNA ZAWARTOŚĆ -->
+
 <main class="container">
 
     <section class="card card-header">
@@ -28,7 +28,7 @@
         <p>Zarządzaj personelem oraz danymi systemowymi lotniska</p>
     </section>
 
-    <!-- AKCJE -->
+    
     <section class="card-grid manager-actions">
 
         <div class="card action-card" onclick="goToWorkers()">
@@ -55,10 +55,10 @@
 
 </main>
 
-<!-- SESJA -->
+
 <script src="/js/session.js"></script>
 
-<!-- LOGIKA PANELU -->
+
 <script src="/js/admin.js"></script>
 
 <script>

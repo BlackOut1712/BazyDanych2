@@ -9,7 +9,7 @@
     
     <link rel="stylesheet" href="/css/style.css">
 
-    <!-- SESJA -->
+    
     <script src="/js/session.js"></script>
     <script>
         checkSession(['CLIENT']);
@@ -18,7 +18,7 @@
 
 <body class="refund-page">
 
-<!-- CENTRALNY WRAPPER -->
+
 <div class="blik-container">
 
     <div class="blik-card">

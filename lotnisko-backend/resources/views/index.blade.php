@@ -23,7 +23,7 @@
 
 <main class="search-page">
 
-    <!-- PANEL WYSZUKIWANIA -->
+    
     <div class="search-card">
         <div class="search-field">
             <label>Data wylotu:</label>

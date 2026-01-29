@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="/css/style.css">
 
-    <!-- SESJA -->
+    
     <script src="/js/session.js"></script>
     <script>
         checkSession(['KASJER']);
@@ -45,9 +45,7 @@
             Zwroty, zmiana miejsca, anulowanie rezerwacji oraz faktury
         </p>
 
-        <!-- =========================
-             TABELA BILETÓW
-        ========================== -->
+        
         <div class="table-wrapper">
             <table class="styled-table">
                 <thead>
@@ -64,7 +62,7 @@
                 <tbody id="ticketsBody">
                     <tr>
                         <td colspan="6" class="table-loading">
-                            ⏳ Ładowanie biletów...
+                             Ładowanie biletów...
                         </td>
                     </tr>
                 </tbody>

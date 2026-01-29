@@ -15,7 +15,7 @@ use App\Models\Pracownik;
 
 class PlatnoscController extends Controller
 {
-    //Autoryzacja ról
+    
     private function requireRole(Request $request, array $roles): void
     {
         $role = strtoupper($request->header('X-User-Role'));
@@ -29,7 +29,6 @@ class PlatnoscController extends Controller
         }
     }
 
-    //wygaszanie rezertwacji
     private function wygasRezerwacje(): void
     {
         Rezerwacja::where('status', 'OCZEKUJE')
@@ -148,10 +147,10 @@ public function zwrotKasjerski(Request $request, $id)
             ]);
         }
 
-        // 🎟️ STATUS BILETU
+        
         $bilet->update(['status' => 'ZWROCONY']);
 
-        // ❌ USUWAMY REZERWACJĘ (KLUCZ!)
+        
         $rezerwacja->delete();
 
         return response()->json([

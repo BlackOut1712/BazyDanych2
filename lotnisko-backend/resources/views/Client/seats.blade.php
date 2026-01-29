@@ -32,9 +32,7 @@
         Wybierz miejsce i podaj dane pasażera
     </p>
 
-    <!-- =========================
-         FORMULARZ PASAŻERA
-    ========================== -->
+
     <div class="sell-form">
 
         <div class="form-row">
@@ -81,9 +79,7 @@
 
     </div>
 
-    <!-- =========================
-         UKŁAD MIEJSC
-    ========================== -->
+
     <div class="seat-layout">
 
         <!-- SAMOLOT -->
@@ -118,9 +114,7 @@
             </div>
         </div>
 
-        <!-- =========================
-             PODSUMOWANIE
-        ========================== -->
+
         <div class="summary-card">
 
             <h3>Podsumowanie</h3>

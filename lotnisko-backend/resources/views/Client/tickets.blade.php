@@ -34,13 +34,13 @@
 
     <section class="card tickets-management">
 
-        <!-- HEADER -->
+        
         <div class="tickets-header-block">
             <h2>Moje bilety</h2>
             <p>Zarządzanie biletami, zmiana miejsca i rezygnacja z lotu</p>
         </div>
 
-        <!-- TABELA -->
+      
         <div class="table-wrapper">
             <table class="styled-table tickets-table">
                 <thead>

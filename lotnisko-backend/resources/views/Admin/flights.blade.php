@@ -21,7 +21,7 @@
 
 <main class="container">
 
-    <!-- LISTA LOTÓW -->
+    
     <section class="card">
         <h2>Loty</h2>
 

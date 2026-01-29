@@ -13,7 +13,7 @@
 </head>
 <body class="workers-page">
 
-<!-- GÓRNY PASEK -->
+
 <header class="top-bar">
     <div class="logo">
         <a href="/cashier/dashboard">Lotnisko</a>
@@ -27,16 +27,16 @@
     </nav>
 </header>
 
-<!-- ZAWARTOŚĆ -->
+
 <main class="container">
 
-    <!-- NAGŁÓWEK -->
+   
     <section class="card card-header">
         <h2>Zarządzanie pracownikami</h2>
         <p>Dodawanie, edycja oraz blokowanie kont pracowników</p>
     
 
-    <!-- LISTA PRACOWNIKÓW -->
+    
     
         <h3>Lista pracowników</h3>
 
@@ -61,13 +61,13 @@
         </div>
     </section>
 
-    <!-- FORMULARZ -->
+    
     <section class="card">
         <h3 id="formTitle">Dodaj pracownika</h3>
 
         <div class="form-grid">
 
-            <!-- ROLA – NA GÓRZE -->
+            
             <div class="role-field">
                 <select id="rola">
                     <option value="KASJER">Kasjer</option>
@@ -98,7 +98,7 @@
             >
             <input type="email" id="email" placeholder="Email">
 
-            <!-- LOGIN + HASŁO OBOK SIEBIE -->
+            
             <input type="text" id="login" placeholder="Login">
 
             <div class="password-field">

@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="/css/style.css">
 
-    <!-- SESJA -->
+   
     <script src="/js/session.js"></script>
     <script>
         checkSession(['KASJER']);
@@ -32,10 +32,10 @@
         Wybierz nowe miejsce dla pasażera
     </p>
 
-    <!-- IDENTYCZNY UKŁAD JAK /SELL -->
+   
     <div class="seat-layout">
 
-        <!-- SAMOLOT (1:1 z sell.html) -->
+   
         <div class="plane plane-svg">
             <svg class="plane-body" viewBox="0 0 300 1100" preserveAspectRatio="none">
                 <path d="
@@ -63,7 +63,7 @@
             </div>
         </div>
 
-        <!-- PANEL BOCZNY (ZAMIAST PODSUMOWANIA SPRZEDAŻY) -->
+        
         <div class="summary-card">
             <h3>Informacje o bilecie</h3>
 

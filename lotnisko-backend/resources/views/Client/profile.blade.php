@@ -30,16 +30,16 @@
 
 <main class="container">
 
-    <!-- HEADER -->
+    
     <section class="card card-header">
         <h2>Mój profil</h2>
         <p>Zarządzaj swoimi danymi kontaktowymi i hasłem</p>
     </section>
 
-    <!-- DANE + HASŁO -->
+    
     <div class="profile-grid">
 
-        <!-- DANE UŻYTKOWNIKA -->
+        
         <div class="card profile-card">
             <h3>Dane użytkownika</h3>
 
@@ -75,7 +75,7 @@
             </form>
         </div>
 
-        <!-- ZMIANA HASŁA -->
+        
         <div class="card profile-card">
                 <h3>Zmiana PIN-u</h3>
 

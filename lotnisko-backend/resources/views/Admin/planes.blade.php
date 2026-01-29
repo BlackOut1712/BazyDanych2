@@ -21,7 +21,7 @@
 
 <main class="container">
 
-    <!-- LISTA SAMOLOTÓW -->
+    
     <section class="card">
         <h2>Samoloty</h2>
 
@@ -52,7 +52,7 @@
         </div>
     </section>
 
-    <!-- FORMULARZ DODAWANIA / EDYCJI -->
+   
     <section class="card" id="addPlaneSection" style="display:none;">
         <h2 id="planeFormTitle">Dodaj samolot</h2>
 

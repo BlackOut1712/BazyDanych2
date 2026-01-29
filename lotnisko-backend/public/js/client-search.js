@@ -2,9 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchFlights();
 });
 
-/* ===============================
-   FORMAT DATY DD.MM.RRRR
-================================ */
+
 function formatDatePL(dateString) {
     if (!dateString) return '—';
 
@@ -18,9 +16,7 @@ function formatDatePL(dateString) {
     });
 }
 
-/* ===============================
-   GŁÓWNE WYSZUKIWANIE LOTÓW
-================================ */
+
 async function searchFlights() {
     const container =
         document.getElementById('resultsBody') ||

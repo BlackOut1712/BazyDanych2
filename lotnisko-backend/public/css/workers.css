@@ -1,11 +1,11 @@
-/* ===== ONLY WORKERS PAGE ===== */
+
 .workers-page .employees-table td.actions {
     text-align: center;
     vertical-align: middle;
     padding: 12px;
 }
 
-/* FLEX TYLKO NA WRAPPERZE */
+
 .workers-page .employees-table .actions-wrap {
     display: inline-flex;
     align-items: center;
@@ -13,7 +13,7 @@
     gap: 10px;
 }
 
-/* IKONY */
+
 .workers-page .icon-btn {
     width: 36px;
     height: 36px;
@@ -35,7 +35,7 @@
     transform: translateY(-1px);
 }
 
-/* DANGER */
+
 .workers-page .icon-btn.danger {
     border-color: #fca5a5;
 }
@@ -44,7 +44,7 @@
     background: #fee2e2;
 }
 
-/* MYŚLNIK */
+
 .workers-page .no-actions {
     font-size: 18px;
     color: #9ca3af;

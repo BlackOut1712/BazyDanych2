@@ -7,20 +7,20 @@
 </head>
 <body>
 
-<!-- GÓRNY PASEK -->
+
 <header class="top-bar">
     <div class="logo">
         <a href="/cashier/dashboard">Lotnisko</a>
     </div>
 
-    <!-- PRAWA STRONA -->
+    
     <div class="top-actions">
         <span class="role-label">Kasjer</span>
         <button class="btn-secondary" onclick="logout()">Wyloguj</button>
     </div>
 </header>
 
-<!-- ZAWARTOŚĆ -->
+
 <main class="container">
 
     <section class="card card-header">

@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<!-- TOP BAR -->
+
 <header class="top-bar">
     <div class="logo">
         <a href="/client/dashboard">Lotnisko</a>
@@ -27,19 +27,19 @@
     </div>
 </header>
 
-<!-- CONTENT -->
+
 <main class="container">
 
-    <!-- HEADER -->
+ 
     <section class="card card-header">
         <h2 id="welcomeText">Witaj, Piotr</h2>
         <p>Zarządzaj swoimi biletami i rezerwacjami</p>
     </section>
 
-    <!-- USE CASE MENU -->
+   
     <section class="card-grid cashier-actions">
 
-        <!-- Zarządzanie swoimi biletami -->
+        
         <div class="card action-card" onclick="goToTickets()">
             <h3>Moje bilety</h3>
             <p>
@@ -48,7 +48,7 @@
             </p>
         </div>
 
-        <!-- Historia zakupów -->
+       
         <div class="card action-card" onclick="goToHistory()">
             <h3>Historia zakupów</h3>
             <p>
@@ -57,7 +57,7 @@
             </p>
         </div>
 
-        <!-- Wyszukiwanie + zakup -->
+        
         <div class="card action-card" onclick="goToSearch()">
             <h3>Zarezerwuj nowy lot</h3>
             <p>

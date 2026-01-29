@@ -52,9 +52,7 @@ async function searchFlights() {
 
             if (flightDateTime < now) return false;
 
-            /* =========================
-               🔍 FILTRY
-            ========================= */
+            
             const cityFrom =
                 flight.trasa?.lotnisko_wylotu?.miasto?.toLowerCase() || '';
             const cityTo =

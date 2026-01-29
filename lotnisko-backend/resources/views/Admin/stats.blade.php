@@ -11,7 +11,7 @@
     <div class="logo">
         <a href="/cashier/dashboard">Lotnisko</a>
     </div>
-    <!-- POPRAWIONE PRZYCISKI -->
+    
     <div class="top-actions">
         <button class="btn-secondary" onclick="goBack()">
             ← Wróć do panelu menadżera
@@ -22,7 +22,7 @@
 
 <main class="container">
 
-    <!-- FILTR OKRESU -->
+    
     <section class="card">
         <h2>Statystyki</h2>
 
@@ -36,7 +36,7 @@
         </div>
     </section>
 
-    <!-- KAFLE STATYSTYK -->
+    
     <section class="stats-grid">
         <div class="card stat-card">
             <h3>Liczba lotów</h3>
@@ -59,7 +59,7 @@
         </div>
     </section>
 
-    <!-- NAJPOPULARNIEJSZE TRASY -->
+   
     <section class="card">
         <h3>Najpopularniejsze trasy</h3>
 

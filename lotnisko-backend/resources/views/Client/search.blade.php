@@ -8,7 +8,7 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css">
 
-    <!-- SESJA -->
+    
     <script src="/js/session.js"></script>
     <script>
         checkSession(['CLIENT']);
@@ -37,7 +37,7 @@
 
     
 
-    <!-- PANEL WYSZUKIWANIA -->
+    
     <section class="card search-card">
 
         <div class="search-field">
@@ -61,7 +61,7 @@
 
     </section>
 
-    <!-- WYNIKI -->
+    
     <section class="card results">
 
         <div class="results-header">

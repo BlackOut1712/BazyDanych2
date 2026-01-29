@@ -10,7 +10,7 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- SESJA -->
+    
     <script src="/js/session.js"></script>
     <script>
         checkSession(['CLIENT']);
@@ -18,9 +18,6 @@
 </head>
 <body>
 
-<!-- =========================
-     TOP BAR
-========================= -->
 <header class="top-bar">
     <div class="logo">
         <a href="/client/dashboard">Lotnisko</a>
@@ -45,9 +42,7 @@
     </div>
 </header>
 
-<!-- =========================
-     CONTENT
-========================= -->
+
 <main class="container">
 
     <section class="card tickets-management">
@@ -58,9 +53,7 @@
             Przegląd Twoich biletów, płatności oraz faktur
         </p>
 
-        <!-- =========================
-             TABELA BILETÓW
-        ========================== -->
+  
         <div class="table-wrapper">
             <table class="styled-table">
                 <thead>
@@ -83,9 +76,6 @@
             </table>
         </div>
 
-        <!-- =========================
-             POWRÓT
-        ========================== -->
         <div class="actions">
             
         </div>
@@ -94,9 +84,7 @@
 
 </main>
 
-<!-- =========================
-     SCRIPTS
-========================= -->
+
 <script src="/js/app.js"></script>
 <script src="/js/history.js"></script>
 

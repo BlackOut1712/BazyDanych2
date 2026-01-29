@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="/css/style.css">
 
-    <!-- SESJA -->
+    
     <script src="/js/session.js"></script>
     <script>
         checkSession(['CLIENT']);
@@ -34,7 +34,7 @@
 
     <div class="seat-layout">
 
-        <!-- SAMOLOT -->
+        
         <div class="plane plane-svg">
             <svg class="plane-body" viewBox="0 0 300 1100" preserveAspectRatio="none">
                 <path d="
@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <!-- PANEL BOCZNY -->
+        
         <div class="summary-card">
             <h3>Informacje o bilecie</h3>
 

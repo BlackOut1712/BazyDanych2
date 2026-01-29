@@ -37,7 +37,7 @@
 
     <div class="sell-form">
 
-        <!-- KLIENT -->
+        
         <div class="form-row">
             <label for="klientSelect">Klient (kupujący)</label>
             <select id="klientSelect">
@@ -45,7 +45,7 @@
             </select>
         </div>
 
-        <!-- PASAŻER -->
+        
         <div class="form-row">
             <label for="passengerFirstName">Imię pasażera</label>
             <input type="text" id="passengerFirstName" placeholder="np. Anna">
@@ -61,7 +61,7 @@
             <input type="text" id="passengerPesel" placeholder="11 cyfr" maxlength="11">
         </div>
 
-        <!-- LOT -->
+       
         <div class="form-row">
             <label for="lotSelect">Lot</label>
             <select id="lotSelect">
@@ -69,7 +69,7 @@
             </select>
         </div>
 
-        <!-- SAMOLOT / MIEJSCA -->
+        
         <div class="seat-layout">
 
             <div class="plane plane-svg">
@@ -99,7 +99,6 @@
                 </div>
             </div>
 
-            <!-- PODSUMOWANIE -->
             <div class="summary-card">
                 <h3>Podsumowanie</h3>
 
@@ -123,7 +122,7 @@
             </select>
         </div>
 
-        <!-- CENA -->
+        
         <div class="form-row">
             <label for="priceInput">Cena biletu (zł)</label>
             <input
@@ -135,7 +134,7 @@
             >
         </div>
 
-        <!-- AKCJE -->
+      
         
 
         <div id="sellResult" class="form-result"></div>

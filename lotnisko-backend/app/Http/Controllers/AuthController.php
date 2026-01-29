@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    /* =========================
-       LOGIN (BEZ ZMIAN)
-    ========================= */
+   
     public function login(Request $request)
     {
         $request->validate([
@@ -22,7 +20,7 @@ class AuthController extends Controller
         $identifier = $request->identifier;
         $secret = $request->secret;
 
-        // KLIENT – EMAIL + HASŁO
+       
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
 
             $klient = Klient::where('email', $identifier)->first();
@@ -39,7 +37,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // PRACOWNIK – LOGIN + HASŁO
         $pracownik = Pracownik::where('login', $identifier)->first();
 
         if (!$pracownik || !Hash::check($secret, $pracownik->haslo)) {
@@ -60,9 +57,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /* =========================
-       REJESTRACJA
-    ========================= */
+   
     public function register(Request $request)
     {
         $data = $request->validate([
